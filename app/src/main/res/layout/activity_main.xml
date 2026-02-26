@@ -1,27 +1,213 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:padding="16dp">
 
-    <Button
-        android:id="@+id/blueToothConnection"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginTop="16dp"
-        android:minWidth="200dp"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:text="蓝牙连接"
-        android:textAllCaps="false"
-        android:maxLines="1"
-        android:ellipsize="end"
-        app:layout_constraintTop_toTopOf="parent"
+    <!-- 左侧：1/4 -->
+    <LinearLayout
+        android:id="@+id/panelLeft"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.25">
+
+        <!-- 顶部 Wi-Fi 提示 -->
+        <TextView
+            android:id="@+id/tvWifiStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:text="Wi-Fi连接"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- 左侧内容容器（预留） -->
+        <FrameLayout
+            android:id="@+id/leftContent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <!-- 中间竖线 -->
+    <View
+        android:id="@+id/divider"
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:background="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/panelLeft"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 右侧：3/4 -->
+    <FrameLayout
+        android:id="@+id/rightContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/divider"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- 正常态：你原来的 2x2 GridLayout（保持不变） -->
+        <androidx.gridlayout.widget.GridLayout
+            android:id="@+id/panelRight"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            app:alignmentMode="alignMargins"
+            app:columnCount="2"
+            app:rowCount="2"
+            app:useDefaultMargins="false">
+
+            <!-- 右上 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/lowFrequency"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_margin="8dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:layout_column="0"
+                app:layout_columnWeight="1"
+                app:layout_row="0"
+                app:layout_rowWeight="1">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp">
+
+                    <!-- 第一行：刺激模式 + 低频 -->
+                    <TextView
+                        android:id="@+id/tv_stim_mode"
+                        style="@style/text.title.column"
+                        android:text="刺激模式: "
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_stim_mode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_stim_mode"
+                        app:layout_constraintStart_toEndOf="@id/tv_stim_mode"
+                        app:layout_constraintTop_toTopOf="@id/tv_stim_mode">
+
+                        <RadioButton
+                            android:id="@+id/rb_stim_low_frequency"
+                            style="@style/text.tab.parameter"
+                            android:text="低频" />
+                    </RadioGroup>
+
+                    <!-- 第二行：载波波形 + 双相方波 -->
+                    <TextView
+                        android:id="@+id/tv_carrier_waveform"
+                        style="@style/text.title.column"
+                        android:layout_marginTop="10dp"
+                        android:text="载波波形: "
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_stim_mode" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_waveform"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_carrier_waveform"
+                        app:layout_constraintStart_toEndOf="@id/tv_carrier_waveform"
+                        app:layout_constraintTop_toTopOf="@id/tv_carrier_waveform">
+
+                        <RadioButton
+                            android:id="@+id/rb_biphasic_square"
+                            style="@style/text.tab.parameter"
+                            android:text="双相方波" />
+                    </RadioGroup>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- 右上2 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card2"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_margin="8dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:layout_column="1"
+                app:layout_columnWeight="1"
+                app:layout_row="0"
+                app:layout_rowWeight="1">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- 右下 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card3"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_margin="8dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:layout_column="0"
+                app:layout_columnWeight="1"
+                app:layout_row="1"
+                app:layout_rowWeight="1">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- 右下2 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card4"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_margin="8dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:layout_column="1"
+                app:layout_columnWeight="1"
+                app:layout_row="1"
+                app:layout_rowWeight="1">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </androidx.cardview.widget.CardView>
+
+        </androidx.gridlayout.widget.GridLayout>
+
+        <!-- 放大态：覆盖整个右侧 3/4，默认隐藏 -->
+        <include
+            android:id="@+id/lowFreqExpandedOverlay"
+            layout="@layout/view_lowfreq_expanded_overlay"
+            android:visibility="gone" />
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

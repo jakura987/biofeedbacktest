@@ -6,12 +6,41 @@
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_700</item>
+<!--        <item name="colorSecondary">@color/teal_200</item>-->
+<!--        <item name="colorSecondaryVariant">@color/teal_700</item>-->
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+    </style>
+
+    <style name="text.tab" parent="text">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:button">@null</item>
+        <item name="android:textSize">28pt</item>
+    </style>
+
+    <style name="text.tab.parameter" parent="text.tab">
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:layout_width">104dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:background">@drawable/bg_tab_parameter</item>
+        <item name="android:button">@null</item>
+        <item name="android:textColor">@color/txt_tab_selector</item>
+    </style>
+
+
+    <style name="text">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="text.title.column" parent="text">
+        <item name="android:textColor">@color/gray_4f</item>
+        <item name="android:textSize">18sp</item>
     </style>
   <!-- Base application theme. -->
 <!--    <style name="Base.Theme.BasicHilt" parent="Theme.Material3.DayNight.NoActionBar">-->
