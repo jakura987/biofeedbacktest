@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="channelVo"
+            type="com.intellizon.biofeedbacktest.vo.ChannelVO" />
+    </data>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <!-- 2) 上升时间 0-20s 步长0.5 -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/tv_title_rise"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:minWidth="90dp"
+                    android:text="上升时间"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_minus_rise"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="12dp"
+                    android:layout_toEndOf="@id/tv_title_rise"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_minus" />
+
+                <ImageView
+                    android:id="@+id/iv_add_rise"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/therapy_ic_add" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_seekbar_rise"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toStartOf="@id/iv_add_rise"
+                    android:layout_toEndOf="@id/iv_minus_rise"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
+                        android:id="@+id/seek_rise"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:max="40"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/round_seekbar"
+                        android:thumb="@drawable/seekbar_thumb_number" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_rise_min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_rise"
+                    android:layout_alignStart="@id/card_seekbar_rise"
+                    android:layout_marginTop="6dp"
+                    android:text="0.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_rise_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_rise"
+                    android:layout_alignEnd="@id/card_seekbar_rise"
+                    android:layout_marginTop="6dp"
+                    android:text="20.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+
+            <!-- 3) 脉冲频率 0-1000（<1步0.1，>=1步1） -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/tv_title_freq"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:minWidth="90dp"
+                    android:text="脉冲频率"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_minus_freq"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="12dp"
+                    android:layout_toEndOf="@id/tv_title_freq"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_minus" />
+
+                <ImageView
+                    android:id="@+id/iv_add_freq"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/therapy_ic_add" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_seekbar_freq"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toStartOf="@id/iv_add_freq"
+                    android:layout_toEndOf="@id/iv_minus_freq"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
+                        android:id="@+id/seek_freq"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:max="1010"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/round_seekbar"
+                        android:thumb="@drawable/seekbar_thumb_number" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_freq_min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_freq"
+                    android:layout_alignStart="@id/card_seekbar_freq"
+                    android:layout_marginTop="6dp"
+                    android:text="0.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_freq_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_freq"
+                    android:layout_alignEnd="@id/card_seekbar_freq"
+                    android:layout_marginTop="6dp"
+                    android:text="1000"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+
+            <!-- 4) 下降时间 0-20s 步长0.5 -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/tv_title_fall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:minWidth="90dp"
+                    android:text="下降时间"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_minus_fall"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="12dp"
+                    android:layout_toEndOf="@id/tv_title_fall"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_minus" />
+
+                <ImageView
+                    android:id="@+id/iv_add_fall"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/therapy_ic_add" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_seekbar_fall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toStartOf="@id/iv_add_fall"
+                    android:layout_toEndOf="@id/iv_minus_fall"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
+                        android:id="@+id/seek_fall"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:max="40"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/round_seekbar"
+                        android:thumb="@drawable/seekbar_thumb_number" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_fall_min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_fall"
+                    android:layout_alignStart="@id/card_seekbar_fall"
+                    android:layout_marginTop="6dp"
+                    android:text="0.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_fall_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_fall"
+                    android:layout_alignEnd="@id/card_seekbar_fall"
+                    android:layout_marginTop="6dp"
+                    android:text="20.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+
+            <!-- 5) 脉冲宽度 10-1000000us 步长10 -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/tv_title_width"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:minWidth="90dp"
+                    android:text="脉冲宽度"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_minus_width"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="12dp"
+                    android:layout_toEndOf="@id/tv_title_width"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_minus" />
+
+                <ImageView
+                    android:id="@+id/iv_add_width"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/therapy_ic_add" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_seekbar_width"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toStartOf="@id/iv_add_width"
+                    android:layout_toEndOf="@id/iv_minus_width"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
+                        android:id="@+id/seek_width"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:max="100000"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:progress="1"
+                        android:progressDrawable="@drawable/round_seekbar"
+                        android:thumb="@drawable/seekbar_thumb_number" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_width_min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_width"
+                    android:layout_alignStart="@id/card_seekbar_width"
+                    android:layout_marginTop="6dp"
+                    android:text="10"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_width_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_width"
+                    android:layout_alignEnd="@id/card_seekbar_width"
+                    android:layout_marginTop="6dp"
+                    android:text="1000000"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+
+            <!-- 6) 休息时间 0-20s 步长0.5 -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/tv_title_rest"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:minWidth="90dp"
+                    android:text="休息时间"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_minus_rest"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="12dp"
+                    android:layout_toEndOf="@id/tv_title_rest"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_minus" />
+
+                <ImageView
+                    android:id="@+id/iv_add_rest"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/therapy_ic_add" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_seekbar_rest"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toStartOf="@id/iv_add_rest"
+                    android:layout_toEndOf="@id/iv_minus_rest"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
+                        android:id="@+id/seek_rest"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:max="40"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/round_seekbar"
+                        android:thumb="@drawable/seekbar_thumb_number" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_rest_min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_rest"
+                    android:layout_alignStart="@id/card_seekbar_rest"
+                    android:layout_marginTop="6dp"
+                    android:text="0.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_rest_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_rest"
+                    android:layout_alignEnd="@id/card_seekbar_rest"
+                    android:layout_marginTop="6dp"
+                    android:text="20.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+
+            <!-- 7) 治疗时间 1-99min 步长1 -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/tv_title_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:minWidth="90dp"
+                    android:text="治疗时间"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_minus_total"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="12dp"
+                    android:layout_toEndOf="@id/tv_title_total"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_minus" />
+
+                <ImageView
+                    android:id="@+id/iv_add_total"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/therapy_ic_add" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_seekbar_total"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toStartOf="@id/iv_add_total"
+                    android:layout_toEndOf="@id/iv_minus_total"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
+                        android:id="@+id/seek_total"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:max="99"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:progress="1"
+                        android:progressDrawable="@drawable/round_seekbar"
+                        android:thumb="@drawable/seekbar_thumb_number" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_total_min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_total"
+                    android:layout_alignStart="@id/card_seekbar_total"
+                    android:layout_marginTop="6dp"
+                    android:text="1"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_total_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_total"
+                    android:layout_alignEnd="@id/card_seekbar_total"
+                    android:layout_marginTop="6dp"
+                    android:text="99"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+
+            <!-- 8) 维持时间 0-99 步长0.5 -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/tv_title_sustain"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:minWidth="90dp"
+                    android:text="维持时间"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_minus_sustain"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="12dp"
+                    android:layout_toEndOf="@id/tv_title_sustain"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_minus" />
+
+                <ImageView
+                    android:id="@+id/iv_add_sustain"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/therapy_ic_add" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_seekbar_sustain"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toStartOf="@id/iv_add_sustain"
+                    android:layout_toEndOf="@id/iv_minus_sustain"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
+                        android:id="@+id/seek_sustain"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:max="198"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/round_seekbar"
+                        android:thumb="@drawable/seekbar_thumb_number" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_sustain_min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_sustain"
+                    android:layout_alignStart="@id/card_seekbar_sustain"
+                    android:layout_marginTop="6dp"
+                    android:text="0.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_sustain_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_sustain"
+                    android:layout_alignEnd="@id/card_seekbar_sustain"
+                    android:layout_marginTop="6dp"
+                    android:text="99.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+
+            <!-- 9) 延时时间 0-20s 步长0.5 -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/tv_title_delay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:minWidth="90dp"
+                    android:text="延时时间"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_minus_delay"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="12dp"
+                    android:layout_toEndOf="@id/tv_title_delay"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_minus" />
+
+                <ImageView
+                    android:id="@+id/iv_add_delay"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/therapy_ic_add" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_seekbar_delay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toStartOf="@id/iv_add_delay"
+                    android:layout_toEndOf="@id/iv_minus_delay"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
+                        android:id="@+id/seek_delay"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:max="40"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/round_seekbar"
+                        android:thumb="@drawable/seekbar_thumb_number"
+                        app:delaySec="@{channelVo.dto.delayTime}"
+                        />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_delay_min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_delay"
+                    android:layout_alignStart="@id/card_seekbar_delay"
+                    android:layout_marginTop="6dp"
+                    android:text="0.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_delay_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_delay"
+                    android:layout_alignEnd="@id/card_seekbar_delay"
+                    android:layout_marginTop="6dp"
+                    android:text="20.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+
+        </LinearLayout>
+    </ScrollView>
+
+</layout>

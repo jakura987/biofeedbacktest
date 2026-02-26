@@ -1,171 +1,212 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="8dp">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/vGuide"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.5" />
+    <data>
+        <variable
+            name="voA"
+            type="com.intellizon.biofeedbacktest.vo.ChannelVO" />
+        <variable
+            name="voB"
+            type="com.intellizon.biofeedbacktest.vo.ChannelVO" />
+        <variable
+            name="voC"
+            type="com.intellizon.biofeedbacktest.vo.ChannelVO" />
+        <variable
+            name="voD"
+            type="com.intellizon.biofeedbacktest.vo.ChannelVO" />
+    </data>
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/hGuide"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.5" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp">
 
-    <!-- 通道A（左上） -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/expCardA"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/vGuide"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/hGuide">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/vGuide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            app:layout_constraintGuide_percent="0.5" />
 
-            <TextView
-                android:id="@+id/tvTitleA"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="通道A"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:maxLines="1"
-                android:ellipsize="end"/>
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/hGuide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.5" />
 
-            <FrameLayout
-                android:id="@+id/expContentA"
+        <!-- 通道A（左上） -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/expCardA"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/vGuide"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/hGuide">
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="12dp">
 
-    <!-- 通道B（右上） -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/expCardB"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:layout_constraintStart_toEndOf="@id/vGuide"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/hGuide">
+                <TextView
+                    android:id="@+id/tvTitleA"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="通道A"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="12dp">
+                <include
+                    android:id="@+id/expContentA"
+                    layout="@layout/view_channel_a_low_frequency"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:channelVo="@{voA}" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:id="@+id/tvTitleB"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="通道B"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:maxLines="1"
-                android:ellipsize="end"/>
+        <!-- 通道B（右上） -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/expCardB"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:layout_constraintStart_toEndOf="@id/vGuide"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/hGuide">
 
-            <FrameLayout
-                android:id="@+id/expContentB"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="12dp">
 
-    <!-- 通道C（左下） -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/expCardC"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/vGuide"
-        app:layout_constraintTop_toBottomOf="@id/hGuide"
-        app:layout_constraintBottom_toBottomOf="parent">
+                <TextView
+                    android:id="@+id/tvTitleB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="通道B"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="12dp">
+                <!-- 先复用同一套 low_frequency 布局跑通 delay -->
+                <include
+                    android:id="@+id/expContentB"
+                    layout="@layout/view_channel_a_low_frequency"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:channelVo="@{voB}" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:id="@+id/tvTitleC"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="通道C"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:maxLines="1"
-                android:ellipsize="end"/>
+        <!-- 通道C（左下） -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/expCardC"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/vGuide"
+            app:layout_constraintTop_toBottomOf="@id/hGuide"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-            <FrameLayout
-                android:id="@+id/expContentC"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="12dp">
 
-    <!-- 通道D（右下） -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/expCardD"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:layout_constraintStart_toEndOf="@id/vGuide"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hGuide"
-        app:layout_constraintBottom_toBottomOf="parent">
+                <TextView
+                    android:id="@+id/tvTitleC"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="通道C"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="12dp">
+                <include
+                    android:id="@+id/expContentC"
+                    layout="@layout/view_channel_a_low_frequency"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:channelVo="@{voC}" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:id="@+id/tvTitleD"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="通道D"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:maxLines="1"
-                android:ellipsize="end"/>
+        <!-- 通道D（右下） -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/expCardD"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:layout_constraintStart_toEndOf="@id/vGuide"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/hGuide"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-            <FrameLayout
-                android:id="@+id/expContentD"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="12dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/tvTitleD"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="通道D"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <include
+                    android:id="@+id/expContentD"
+                    layout="@layout/view_channel_a_low_frequency"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:channelVo="@{voD}" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 中间圆形按钮 -->
+        <TextView
+            android:id="@+id/btnCenterInfo"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:gravity="center"
+            android:text="--"
+            android:textStyle="bold"
+            android:textSize="10sp"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_circle_center_btn"
+            android:clickable="true"
+            android:focusable="true"
+            android:elevation="12dp"
+            app:layout_constraintStart_toStartOf="@id/vGuide"
+            app:layout_constraintEnd_toEndOf="@id/vGuide"
+            app:layout_constraintTop_toTopOf="@id/hGuide"
+            app:layout_constraintBottom_toBottomOf="@id/hGuide" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

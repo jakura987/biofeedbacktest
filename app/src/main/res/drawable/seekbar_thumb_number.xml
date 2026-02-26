@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.intellizon.biofeedbacktest.progress.NumberDrawable xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:color="@color/gray_9a"
+    android:textSize="12sp"
+    app:bgColor="@color/gray_fa"
+    app:bgColor1="@color/main_light_3"
+    app:bgColor2="@color/gray_dd"
+    app:height="22dp"
+    app:width="22dp" />
+
+
