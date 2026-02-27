@@ -111,7 +111,8 @@
                         <RadioButton
                             android:id="@+id/rb_stim_low_frequency"
                             style="@style/text.tab.parameter"
-                            android:text="低频" />
+                            android:text="低频"
+                            android:checked="true"/>
                     </RadioGroup>
 
                     <!-- 第二行：载波波形 + 双相方波 -->
@@ -136,7 +137,8 @@
                         <RadioButton
                             android:id="@+id/rb_biphasic_square"
                             style="@style/text.tab.parameter"
-                            android:text="双相方波" />
+                            android:text="双相方波"
+                            android:checked="true"/>
                     </RadioGroup>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -34,7 +34,7 @@ class TherapyVO(
             therapyId = therapyId,
             channelName = ch,
             waveform = Waveform.BIPHASIC_SQUARE,
-            modulationWaveform = Waveform.BIPHASIC_SQUARE,
+            modulationWaveform = Waveform.UNIPHASIC_SQUARE,//低频不会发出这个属性
             presetIntensity = 0,
             width = null,
             frequencyType = FrequencyType.CONSTANT_FREQUENCY,

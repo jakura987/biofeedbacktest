@@ -11,11 +11,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.intellizon.biofeedbacktest.databinding.ViewLowfreqExpandedOverlayBinding
+import com.intellizon.biofeedbacktest.domain.ChannelDetail
 import com.intellizon.biofeedbacktest.domain.ChannelName
 import com.intellizon.biofeedbacktest.domain.TherapyDetail
 import com.intellizon.biofeedbacktest.domain.TherapyMode
+import com.intellizon.biofeedbacktest.domain.TherapyMode.Companion.LOW_FREQUENCY
+import com.intellizon.biofeedbacktest.domain.Waveform
 import com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
 import com.intellizon.biofeedbacktest.ui.ChannelControlsBinder
+import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder
+import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initFrequencyMinUi
+import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initLowHeaderUi
+import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initStepSeekbarUi
 import com.intellizon.biofeedbacktest.vo.ChannelVO
 import com.intellizon.biofeedbacktest.vo.TherapyVO
 import dagger.hilt.android.AndroidEntryPoint
@@ -103,6 +110,16 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.panelRight).visibility = View.INVISIBLE
 
+        if (overlayId == R.id.lowFreqExpandedOverlay) {
+            // ✅ 强制当前模式=低频
+            therapyVO.modifiedDto = therapyVO.modifiedDto.copy(mode = TherapyMode.LOW_FREQUENCY)
+
+            // ✅ 低频只有一个波形选项的话也可以强制（或用缓存值回填）
+            val wf = Waveform.BIPHASIC_SQUARE
+            setWaveformForAllChannels(TherapyMode.LOW_FREQUENCY, wf)
+
+        }
+
         // 1) 准备 VO（从缓存取/默认创建）
         prepareLowVos()
 
@@ -114,6 +131,7 @@ class MainActivity : AppCompatActivity() {
         binding?.voD = voD
         binding?.lifecycleOwner = this
 
+
         // 3) 初始化 seekbar UI（formatter/+/-），只做一次
         bindChannelsForOverlayOnce(overlay)
 
@@ -122,6 +140,23 @@ class MainActivity : AppCompatActivity() {
 
         // 5) 标题双击关闭
         bindDoubleTapCloseToTitleAOnce(overlay)
+    }
+
+    private fun setWaveformForAllChannels(@TherapyMode mode: Int, @Waveform wf: Int) {
+        fun update(@ChannelName ch: Int) {
+            val old: ChannelDetail = therapyVO.getOrCreateChannel(mode, ch)
+            therapyVO.putChannel(mode, old.copy(waveform = wf))
+        }
+        update(ChannelName.CHANNEL_A)
+        update(ChannelName.CHANNEL_B)
+        update(ChannelName.CHANNEL_C)
+        update(ChannelName.CHANNEL_D)
+
+        // 如果当前 overlay 正在编辑这个 mode，也同步到 voA~voD（可选）
+        if (::voA.isInitialized && voA.mode == mode) voA.dto = voA.dto.copy(waveform = wf)
+        if (::voB.isInitialized && voB.mode == mode) voB.dto = voB.dto.copy(waveform = wf)
+        if (::voC.isInitialized && voC.mode == mode) voC.dto = voC.dto.copy(waveform = wf)
+        if (::voD.isInitialized && voD.mode == mode) voD.dto = voD.dto.copy(waveform = wf)
     }
 
     private fun hideOverlay() {
@@ -170,6 +205,14 @@ class MainActivity : AppCompatActivity() {
             // delay: 0..20 step 0.5 => progress 0..40
             initStepSeekbarUi(root = root, seekId = R.id.seek_delay, minusId = R.id.iv_minus_delay, plusId = R.id.iv_add_delay, maxProgress = 40, stepValue = 0.5)
             initStepSeekbarUi(root, R.id.seek_rise, R.id.iv_minus_rise, R.id.iv_add_rise, 40, 0.5)
+            initStepSeekbarUi(root, R.id.seek_fall, R.id.iv_minus_fall, R.id.iv_add_fall, 40, 0.5)
+            initStepSeekbarUi(root, R.id.seek_rest, R.id.iv_minus_rest, R.id.iv_add_rest, 40, 0.5)
+            initStepSeekbarUi(root, R.id.seek_sustain, R.id.iv_minus_sustain, R.id.iv_add_sustain, 40, 0.5)
+            initStepSeekbarUi(root, R.id.seek_total, R.id.iv_minus_total, R.id.iv_add_total, 99, 1.0, decimals = 0)
+            initStepSeekbarUi(root, R.id.seek_width, R.id.iv_minus_width, R.id.iv_add_width, 100000, 10.0, decimals = 0)
+
+            initFrequencyMinUi(root = root, seekId = R.id.seek_freq, minusId = R.id.iv_minus_freq, plusId = R.id.iv_add_freq)
+
         }
 
         initOne(overlay.findViewById(R.id.expContentA))
@@ -203,37 +246,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 通用：seek + +/- 初始化（安全版：找不到控件就直接 return）
-     */
-    private fun initStepSeekbarUi(
-        root: View,
-        seekId: Int,
-        minusId: Int,
-        plusId: Int,
-        maxProgress: Int,
-        stepValue: Double,
-    ) {
-        val seek = root.findViewById<View?>(seekId) as? RyCompactSeekbar ?: return
-        val minus = root.findViewById<View?>(minusId) ?: return
-        val plus = root.findViewById<View?>(plusId) ?: return
-
-        seek.max = maxProgress
-        seek.setFormatter { p ->
-            val v = p * stepValue
-            String.format(Locale.US, "%.1f", v)
-        }
-        seek.notifyRefresh()
-
-        minus.setOnClickListener {
-            seek.progress = (seek.progress - 1).coerceAtLeast(0)
-            seek.notifyRefresh()
-        }
-        plus.setOnClickListener {
-            seek.progress = (seek.progress + 1).coerceAtMost(seek.max)
-            seek.notifyRefresh()
-        }
-    }
 
     private fun prepareLowVos() {
         voA =
