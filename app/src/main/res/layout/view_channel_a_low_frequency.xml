@@ -74,7 +74,7 @@
                         android:max="40"
                         android:paddingStart="0dp"
                         android:paddingEnd="0dp"
-                        android:progress="0"
+                        android:progress="@={channelVo.riseProgress}"
                         android:progressDrawable="@drawable/round_seekbar"
                         android:thumb="@drawable/seekbar_thumb_number" />
                 </androidx.cardview.widget.CardView>
@@ -653,13 +653,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="24dp"
                         android:max="40"
-                        android:paddingStart="0dp"
-                        android:paddingEnd="0dp"
-                        android:progress="0"
+                        android:progress="@={channelVo.delayProgress}"
                         android:progressDrawable="@drawable/round_seekbar"
-                        android:thumb="@drawable/seekbar_thumb_number"
-                        app:delaySec="@{channelVo.dto.delayTime}"
-                        />
+                        android:thumb="@drawable/seekbar_thumb_number" />
                 </androidx.cardview.widget.CardView>
 
                 <TextView

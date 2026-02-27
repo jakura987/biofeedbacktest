@@ -4,28 +4,32 @@ import com.intellizon.biofeedbacktest.domain.ChannelDetail
 import com.intellizon.biofeedbacktest.domain.ChannelName
 import com.intellizon.biofeedbacktest.domain.FrequencyType
 import com.intellizon.biofeedbacktest.domain.TherapyDetail
+import com.intellizon.biofeedbacktest.domain.TherapyMode
 import com.intellizon.biofeedbacktest.domain.Waveform
 
 class TherapyVO(
     val therapyId: Long = 0L,
-    val modifiedDto: TherapyDetail,
+    var modifiedDto: TherapyDetail,
 ) {
-    // LOW 四通道缓存
-    private val low: MutableMap<Int, ChannelDetail> = mutableMapOf()
+    // mode -> (channelName -> ChannelDetail)
+    private val channelsByMode: MutableMap<Int, MutableMap<Int, ChannelDetail>> = mutableMapOf()
 
-    /** 取 LOW 指定通道：无则创建默认并缓存 */
-    fun getOrCreateLowChannel(@ChannelName ch: Int): ChannelDetail {
-        return low[ch] ?: defaultLowChannel(therapyId, ch).also { low[ch] = it }
+    fun getOrCreateChannel(@TherapyMode mode: Int, @ChannelName ch: Int): ChannelDetail {
+        val perMode = channelsByMode.getOrPut(mode) { mutableMapOf() }
+        return perMode[ch] ?: defaultChannel(therapyId, mode, ch).also { perMode[ch] = it }
     }
 
-    /** 提交/覆盖 LOW 指定通道 */
-    fun putLowChannel(detail: ChannelDetail) {
-        low[detail.channelName] = detail
+    fun putChannel(@TherapyMode mode: Int, detail: ChannelDetail) {
+        val perMode = channelsByMode.getOrPut(mode) { mutableMapOf() }
+        perMode[detail.channelName] = detail
     }
 
-    fun getLowChannelOrNull(@ChannelName ch: Int): ChannelDetail? = low[ch]
+    fun getChannelOrNull(@TherapyMode mode: Int, @ChannelName ch: Int): ChannelDetail? {
+        return channelsByMode[mode]?.get(ch)
+    }
 
-    private fun defaultLowChannel(therapyId: Long, @ChannelName ch: Int): ChannelDetail {
+    private fun defaultChannel(therapyId: Long, @TherapyMode mode: Int, @ChannelName ch: Int): ChannelDetail {
+        // 先统一默认（你阉割版只关心 delayTime 也没问题）
         return ChannelDetail(
             therapyId = therapyId,
             channelName = ch,
@@ -42,7 +46,7 @@ class TherapyVO(
             fallTime = null,
             restTime = null,
             sustainTime = null,
-            delayTime = 0.0, // 先只管这个
+            delayTime = 0.0,
             totalTime = null,
             contractionTimeSec = 0,
             stimulationTimeSec = 0,

@@ -9,97 +9,121 @@ import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
+import com.intellizon.biofeedbacktest.databinding.ViewLowfreqExpandedOverlayBinding
+import com.intellizon.biofeedbacktest.domain.ChannelName
+import com.intellizon.biofeedbacktest.domain.TherapyDetail
+import com.intellizon.biofeedbacktest.domain.TherapyMode
 import com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
 import com.intellizon.biofeedbacktest.ui.ChannelControlsBinder
+import com.intellizon.biofeedbacktest.vo.ChannelVO
 import com.intellizon.biofeedbacktest.vo.TherapyVO
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import java.util.Locale
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private var activeOverlay: View? = null
 
-    // 目前只开低频 overlay，其它先注释
+    private lateinit var voA: ChannelVO
+    private lateinit var voB: ChannelVO
+    private lateinit var voC: ChannelVO
+    private lateinit var voD: ChannelVO
+
     private val overlayIds = intArrayOf(
         R.id.lowFreqExpandedOverlay,
-//        R.id.middleExpandedOverlay,
-//        R.id.otherExpandedOverlay,
+        // R.id.middleExpandedOverlay,
+        // R.id.otherExpandedOverlay,
     )
 
-    private val therapyVO = TherapyVO()
+    private val therapyVO = TherapyVO(
+        therapyId = 0L,
+        modifiedDto = TherapyDetail(
+            name = "temp",
+            mode = TherapyMode.LOW_FREQUENCY,
+            subMode = 0,
+            tremorFrequency = 0,
+            hasChannelA = true,
+            hasChannelB = true,
+            hasChannelC = true,
+            hasChannelD = true,
+            isDeleted = false,
+            frequencyShift = 0,
+            dynamicShifts = 0,
+        ),
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree())
-        }
+        if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         Timber.d("version name: ${BuildConfig.VERSION_NAME}")
 
-        // ===== 1) 双击 lowFrequency 进入 overlay =====
+        // 双击 lowFrequency 进入 overlay
         val cardLow = findViewById<View>(R.id.lowFrequency)
-        val enterLowDetector = GestureDetector(
-            this,
-            object : GestureDetector.SimpleOnGestureListener() {
-                override fun onDoubleTap(e: MotionEvent): Boolean {
-                    showOverlay(R.id.lowFreqExpandedOverlay)
-                    return true
-                }
-            },
-        )
+        val enterLowDetector =
+            GestureDetector(
+                this,
+                object : GestureDetector.SimpleOnGestureListener() {
+                    override fun onDoubleTap(e: MotionEvent): Boolean {
+                        showOverlay(R.id.lowFreqExpandedOverlay)
+                        return true
+                    }
+                },
+            )
 
         cardLow.setOnTouchListener { _, event ->
-            // 这里吞掉事件也没关系，因为 cardLow 本身只是入口
             enterLowDetector.onTouchEvent(event)
             true
         }
 
-        // ===== 2) Back 键：优先收起 overlay =====
+        // Back：优先收起 overlay
         onBackPressedDispatcher.addCallback(this) {
             if (activeOverlay != null) {
                 hideOverlay()
             } else {
-                // 交给系统默认返回行为
                 isEnabled = false
                 onBackPressedDispatcher.onBackPressed()
             }
         }
 
-        // 初始态：grid 可见
         findViewById<View>(R.id.panelRight).visibility = View.VISIBLE
-
-
     }
 
     private fun showOverlay(overlayId: Int) {
-        // 1) 隐藏所有 overlay
-        overlayIds.forEach { id ->
-            findViewById<View>(id)?.visibility = View.GONE
-        }
+        overlayIds.forEach { id -> findViewById<View>(id)?.visibility = View.GONE }
 
-        // 2) 显示目标 overlay
         val overlay = findViewById<View>(overlayId)
         overlay.visibility = View.VISIBLE
         activeOverlay = overlay
 
-        // 3) 隐藏正常态 Grid（你的设计是 overlay 覆盖右侧，所以隐藏右侧）
         findViewById<View>(R.id.panelRight).visibility = View.INVISIBLE
 
-        // 4) 绑定四通道（只绑定一次）
+        // 1) 准备 VO（从缓存取/默认创建）
+        prepareLowVos()
+
+        // 2) 赋值给 overlay binding
+        val binding = DataBindingUtil.bind<ViewLowfreqExpandedOverlayBinding>(overlay)
+        binding?.voA = voA
+        binding?.voB = voB
+        binding?.voC = voC
+        binding?.voD = voD
+        binding?.lifecycleOwner = this
+
+        // 3) 初始化 seekbar UI（formatter/+/-），只做一次
         bindChannelsForOverlayOnce(overlay)
 
-
-        // ✅ 在这里绑定中间圆按钮
+        // 4) 中间按钮 commit + 打印
         bindCenterInfoButtonOnce(overlay)
 
-        // ✅ 5) 只在 “通道A 标题(tvTitleA)” 双击关闭 overlay
+        // 5) 标题双击关闭
         bindDoubleTapCloseToTitleAOnce(overlay)
     }
 
-    /** 收起当前 overlay，恢复正常态 grid */
     private fun hideOverlay() {
         activeOverlay?.visibility = View.GONE
         activeOverlay = null
@@ -111,76 +135,131 @@ class MainActivity : AppCompatActivity() {
         overlay.setTag(TAG_CENTER_BOUND, true)
 
         val btn = overlay.findViewById<TextView>(R.id.btnCenterInfo)
-        btn.text = "info"
+        btn.text = "commit"
 
         btn.setOnClickListener {
-            // expContentA 是 include 的根 view（ViewGroup）
-            val contentA = overlay.findViewById<View>(R.id.expContentA)
-            val seek = contentA.findViewById<View>(R.id.seek_delay) as? RyCompactSeekbar
-            Timber.v("delay seek=%s", seek)
+            // commit：把最新 dto 落到 therapyVO
+            therapyVO.putChannel(TherapyMode.LOW_FREQUENCY, voA.dto)
+            therapyVO.putChannel(TherapyMode.LOW_FREQUENCY, voB.dto)
+            therapyVO.putChannel(TherapyMode.LOW_FREQUENCY, voC.dto)
+            therapyVO.putChannel(TherapyMode.LOW_FREQUENCY, voD.dto)
+
+            Timber.d(
+                """
+                ===== COMMIT LOW =====
+                therapyDetail=%s
+                A=%s
+                B=%s
+                C=%s
+                D=%s
+                """.trimIndent(),
+                therapyVO.modifiedDto,
+                voA.dto,
+                voB.dto,
+                voC.dto,
+                voD.dto,
+            )
         }
     }
 
-    /**
-     * 只绑定一次（避免每次 showOverlay 都重复 setOnSeekBarChangeListener）
-     */
     private fun bindChannelsForOverlayOnce(overlay: View) {
         if (overlay.getTag(TAG_BOUND) == true) return
         overlay.setTag(TAG_BOUND, true)
 
-        val chA = overlay.findViewById<View>(R.id.expContentA)
-        Timber.d("chA=${chA.javaClass.simpleName}, seek_delay=${chA.findViewById<View?>(R.id.seek_delay)}")
-
-        // 你后面打开 B/C/D 时，再放开
-//        val chB = overlay.findViewById<View>(R.id.expContentB)
-//        val chC = overlay.findViewById<View>(R.id.expContentC)
-//        val chD = overlay.findViewById<View>(R.id.expContentD)
-
-        ChannelControlsBinder.bindDelayTime(chA, initialSec = null) { sec ->
-            Timber.d("A delay=$sec")
+        fun initOne(root: View) {
+            // delay: 0..20 step 0.5 => progress 0..40
+            initStepSeekbarUi(root = root, seekId = R.id.seek_delay, minusId = R.id.iv_minus_delay, plusId = R.id.iv_add_delay, maxProgress = 40, stepValue = 0.5)
+            initStepSeekbarUi(root, R.id.seek_rise, R.id.iv_minus_rise, R.id.iv_add_rise, 40, 0.5)
         }
 
-//        ChannelControlsBinder.bindDelayTime(chB, initialSec = null) { sec -> Timber.d("B delay=$sec") }
-//        ChannelControlsBinder.bindDelayTime(chC, initialSec = null) { sec -> Timber.d("C delay=$sec") }
-//        ChannelControlsBinder.bindDelayTime(chD, initialSec = null) { sec -> Timber.d("D delay=$sec") }
+        initOne(overlay.findViewById(R.id.expContentA))
+        initOne(overlay.findViewById(R.id.expContentB))
+        initOne(overlay.findViewById(R.id.expContentC))
+        initOne(overlay.findViewById(R.id.expContentD))
     }
 
-    /**
-     * ✅ 只对“通道A标题(tvTitleA)”做双击关闭，避免误触发（+/-、SeekBar）
-     *
-     */
     private fun bindDoubleTapCloseToTitleAOnce(overlay: View) {
-        // 防重复绑定：overlay 级别
         if (overlay.getTag(TAG_TITLE_A_BOUND) == true) return
         overlay.setTag(TAG_TITLE_A_BOUND, true)
 
-        // ✅ 关键：不要从 expContentA(ScrollView) 里找，直接在 overlay 里找
-        val tvTitleA = overlay.findViewById<View?>(R.id.tvTitleA)
-        if (tvTitleA == null) {
+        val tvTitleA = overlay.findViewById<View?>(R.id.tvTitleA) ?: run {
             Timber.e("tvTitleA not found in overlay! overlayId=${overlay.id}")
             return
         }
 
-        // ✅ 确保它能收到 click
         tvTitleA.isClickable = true
         tvTitleA.isFocusable = true
 
-        // 手动双击：两次点击间隔 < 500ms 就关闭
         val thresholdMs = 500L
         tvTitleA.setOnClickListener {
             val now = android.os.SystemClock.uptimeMillis()
             val last = (tvTitleA.getTag(TAG_LAST_CLICK_MS) as? Long) ?: 0L
-
-            Timber.d("tvTitleA click: now=$now last=$last diff=${now - last}")
-
             if (now - last in 1..thresholdMs) {
-                Timber.d("tvTitleA double click -> hideOverlay()")
                 hideOverlay()
-                tvTitleA.setTag(TAG_LAST_CLICK_MS, 0L) // 重置，避免三连击误判
+                tvTitleA.setTag(TAG_LAST_CLICK_MS, 0L)
             } else {
                 tvTitleA.setTag(TAG_LAST_CLICK_MS, now)
             }
         }
+    }
+
+    /**
+     * 通用：seek + +/- 初始化（安全版：找不到控件就直接 return）
+     */
+    private fun initStepSeekbarUi(
+        root: View,
+        seekId: Int,
+        minusId: Int,
+        plusId: Int,
+        maxProgress: Int,
+        stepValue: Double,
+    ) {
+        val seek = root.findViewById<View?>(seekId) as? RyCompactSeekbar ?: return
+        val minus = root.findViewById<View?>(minusId) ?: return
+        val plus = root.findViewById<View?>(plusId) ?: return
+
+        seek.max = maxProgress
+        seek.setFormatter { p ->
+            val v = p * stepValue
+            String.format(Locale.US, "%.1f", v)
+        }
+        seek.notifyRefresh()
+
+        minus.setOnClickListener {
+            seek.progress = (seek.progress - 1).coerceAtLeast(0)
+            seek.notifyRefresh()
+        }
+        plus.setOnClickListener {
+            seek.progress = (seek.progress + 1).coerceAtMost(seek.max)
+            seek.notifyRefresh()
+        }
+    }
+
+    private fun prepareLowVos() {
+        voA =
+            ChannelVO(
+                mode = TherapyMode.LOW_FREQUENCY,
+                channelName = ChannelName.CHANNEL_A,
+                dto = therapyVO.getOrCreateChannel(TherapyMode.LOW_FREQUENCY, ChannelName.CHANNEL_A),
+            )
+        voB =
+            ChannelVO(
+                mode = TherapyMode.LOW_FREQUENCY,
+                channelName = ChannelName.CHANNEL_B,
+                dto = therapyVO.getOrCreateChannel(TherapyMode.LOW_FREQUENCY, ChannelName.CHANNEL_B),
+            )
+        voC =
+            ChannelVO(
+                mode = TherapyMode.LOW_FREQUENCY,
+                channelName = ChannelName.CHANNEL_C,
+                dto = therapyVO.getOrCreateChannel(TherapyMode.LOW_FREQUENCY, ChannelName.CHANNEL_C),
+            )
+        voD =
+            ChannelVO(
+                mode = TherapyMode.LOW_FREQUENCY,
+                channelName = ChannelName.CHANNEL_D,
+                dto = therapyVO.getOrCreateChannel(TherapyMode.LOW_FREQUENCY, ChannelName.CHANNEL_D),
+            )
     }
 
     private companion object {

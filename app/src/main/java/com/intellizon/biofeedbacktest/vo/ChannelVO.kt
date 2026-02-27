@@ -13,6 +13,27 @@ class ChannelVO(
     var dto: ChannelDetail,
     val snapshots: Stack<ChannelDetail> = Stack(),
 ) {
+
+    var delayProgress: Int
+        get() {
+            val sec = dto.delayTime ?: 0.0
+            return kotlin.math.round(sec / 0.5).toInt().coerceIn(0, 40)
+        }
+        set(value) {
+            val p = value.coerceIn(0, 40)
+            dto = dto.copy(delayTime = p * 0.5)
+        }
+
+    var riseProgress: Int
+        get() {
+            val sec = dto.riseTime ?: 0.0
+            return kotlin.math.round(sec / 0.5).toInt().coerceIn(0, 40)
+        }
+        set(value) {
+            val p = value.coerceIn(0, 40)
+            dto = dto.copy(riseTime = p * 0.5)
+        }
+
     fun pushSnapshot() {
         snapshots.push(dto)
     }
