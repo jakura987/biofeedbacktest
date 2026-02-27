@@ -95,6 +95,7 @@
                         android:id="@+id/tv_stim_mode"
                         style="@style/text.title.column"
                         android:text="刺激模式: "
+                        android:layout_marginTop="2dp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -148,7 +149,7 @@
 
             <!-- 右上2 -->
             <androidx.cardview.widget.CardView
-                android:id="@+id/card2"
+                android:id="@+id/midFrequency"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_margin="8dp"
@@ -160,9 +161,147 @@
                 app:layout_row="0"
                 app:layout_rowWeight="1">
 
-                <FrameLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:padding="12dp">
+
+                    <!-- 第一行：刺激模式 + 低频 -->
+                    <TextView
+                        android:id="@+id/tv_stim_mid_mode"
+                        style="@style/text.title.column"
+                        android:text="刺激模式: "
+                        android:layout_marginTop="2dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_stim_mode_mid"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_stim_mid_mode"
+                        app:layout_constraintStart_toEndOf="@id/tv_stim_mid_mode"
+                        app:layout_constraintTop_toTopOf="@id/tv_stim_mid_mode">
+
+                        <RadioButton
+                            android:id="@+id/rb_stim_mid_frequency"
+                            style="@style/text.tab.parameter"
+                            android:text="中频"
+                            android:checked="true"/>
+                    </RadioGroup>
+
+                    <!-- 第二行：刺激类型 -->
+                    <TextView
+                        android:id="@+id/tv_stim_mid_sub_mode"
+                        style="@style/text.title.column"
+                        android:layout_marginTop="10dp"
+                        android:text="刺激类型: "
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_stim_mid_mode" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_stim_sub_mode_mid"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_stim_mid_sub_mode"
+                        app:layout_constraintStart_toEndOf="@id/tv_stim_mid_sub_mode"
+                        app:layout_constraintTop_toTopOf="@id/tv_stim_mid_sub_mode">
+
+                        <RadioButton
+                            android:id="@+id/rb_stim_mid_interference"
+                            style="@style/text.tab.parameter"
+                            android:text="干扰电刺激"
+                            android:checked="true" />
+
+                        <RadioButton
+                            android:id="@+id/rb_stim_mid_modulated"
+                            style="@style/text.tab.parameter"
+                            android:layout_marginStart="10dp"
+                            android:text="调制中频电" />
+                    </RadioGroup>
+
+
+                    <!-- 第三行：载波波形 -->
+                    <TextView
+                        android:id="@+id/tv_carrier_mid_waveform"
+                        style="@style/text.title.column"
+                        android:layout_marginTop="10dp"
+                        android:text="载波波形: "
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_stim_mid_sub_mode" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_mid_waveform"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_carrier_mid_waveform"
+                        app:layout_constraintStart_toEndOf="@id/tv_carrier_mid_waveform"
+                        app:layout_constraintTop_toTopOf="@id/tv_carrier_mid_waveform">
+
+                        <!-- 调制中频默认要选这个：双相方波 -->
+                        <RadioButton
+                            android:id="@+id/rb_mid_carrier_biphasic_square"
+                            style="@style/text.tab.parameter"
+                            android:text="双相方波" />
+
+                        <!-- 干扰电时唯一选项：正弦波（也可保留） -->
+                        <RadioButton
+                            android:id="@+id/rb_mid_carrier_sine"
+                            style="@style/text.tab.parameter"
+                            android:layout_marginStart="10dp"
+                            android:text="正弦波" />
+                    </RadioGroup>
+
+                    <!-- 第四行：调制波形 -->
+                    <TextView
+                        android:id="@+id/tv_carrier_mid_modulationWaveform"
+                        style="@style/text.title.column"
+                        android:layout_marginTop="10dp"
+                        android:text="调制波形: "
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_carrier_mid_waveform" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_mid_modulationWaveform"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_carrier_mid_modulationWaveform"
+                        app:layout_constraintStart_toEndOf="@id/tv_carrier_mid_modulationWaveform"
+                        app:layout_constraintTop_toTopOf="@id/tv_carrier_mid_modulationWaveform">
+
+                        <!-- 调制中频默认要选这个：正弦波 -->
+                        <RadioButton
+                            android:id="@+id/rb_mid_mod_sine"
+                            style="@style/text.tab.parameter"
+                            android:text="正弦波" />
+
+                        <RadioButton
+                            android:id="@+id/rb_mid_mod_biphasic_square"
+                            style="@style/text.tab.parameter"
+                            android:layout_marginStart="10dp"
+                            android:text="双相方波" />
+
+                        <!-- 干扰电时唯一选项：三角波（默认选中） -->
+                        <RadioButton
+                            android:id="@+id/rb_mid_mod_triangle"
+                            style="@style/text.tab.parameter"
+                            android:layout_marginStart="10dp"
+                            android:text="三角波" />
+                    </RadioGroup>
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
             </androidx.cardview.widget.CardView>
 
             <!-- 右下 -->
@@ -209,6 +348,12 @@
         <include
             android:id="@+id/lowFreqExpandedOverlay"
             layout="@layout/view_lowfreq_expanded_overlay"
+            android:visibility="gone" />
+
+
+        <include
+            android:id="@+id/middleExpandedOverlay"
+            layout="@layout/view_midfreq_expanded_overlay"
             android:visibility="gone" />
     </FrameLayout>
 

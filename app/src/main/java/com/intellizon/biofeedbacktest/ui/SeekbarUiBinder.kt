@@ -26,8 +26,9 @@ object SeekbarUiBinder {
         decimals: Int = 1,
     ) {
         val seek = root.findViewById<View?>(seekId) as? RyCompactSeekbar ?: return
-        val minus = root.findViewById<View?>(minusId) ?: return
-        val plus = root.findViewById<View?>(plusId) ?: return
+        // ✅ minus/plus 找不到就忽略，不再 return
+        val minus = root.findViewById<View?>(minusId)
+        val plus = root.findViewById<View?>(plusId)
 
         seek.max = maxProgress
         seek.setFormatter { p ->
@@ -61,8 +62,9 @@ object SeekbarUiBinder {
         plusId: Int,
     ) {
         val seek = root.findViewById<View?>(seekId) as? RyCompactSeekbar ?: return
-        val minus = root.findViewById<View?>(minusId) ?: return
-        val plus = root.findViewById<View?>(plusId) ?: return
+        // ✅ 缺按钮不致命：允许没有 +/- 也能拖动
+        val minus = root.findViewById<View?>(minusId)
+        val plus = root.findViewById<View?>(plusId)
 
         seek.max = 1008
 
