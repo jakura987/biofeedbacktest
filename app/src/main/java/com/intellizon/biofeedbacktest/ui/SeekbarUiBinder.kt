@@ -122,4 +122,5 @@ object SeekbarUiBinder {
             onWaveformChanged(wf)
         }
     }
+
 }
