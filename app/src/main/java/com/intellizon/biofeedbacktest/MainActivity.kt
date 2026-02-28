@@ -73,8 +73,6 @@ class MainActivity : AppCompatActivity() {
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         Timber.d("version name: ${BuildConfig.VERSION_NAME}")
 
-        bindMidCarrierWaveformByStimTypeOnce()
-        bindMidModulationWaveformByStimTypeOnce()
 
         // 双击 lowFrequency 进入 overlay
         val cardLow = findViewById<View>(R.id.lowFrequency)
@@ -353,121 +351,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //中频不同刺激类型对应 不同载波波形
-    fun bindMidCarrierWaveformByStimTypeOnce() {
-        val cardMid = findViewById<View>(R.id.midFrequency)
-
-        val tagKey = 0xCC030101.toInt()
-        if (cardMid.getTag(tagKey) == true) return
-        cardMid.setTag(tagKey, true)
-
-        val rgStim = cardMid.findViewById<RadioGroup?>(R.id.rg_stim_sub_mode_mid) ?: return
-        val rbInterference = cardMid.findViewById<RadioButton?>(R.id.rb_stim_mid_interference)
-        val rbModulated = cardMid.findViewById<RadioButton?>(R.id.rb_stim_mid_modulated)
-
-        val rgCarrier = cardMid.findViewById<RadioGroup?>(R.id.rg_mid_waveform) ?: return
-        val rbCarrierBi = cardMid.findViewById<RadioButton?>(R.id.rb_mid_carrier_biphasic_square)
-        val rbCarrierSine = cardMid.findViewById<RadioButton?>(R.id.rb_mid_carrier_sine)
-
-        //调整位置
-        fun applyInterferenceCarrierUi() {
-            rbCarrierBi?.visibility = View.GONE
-            rbCarrierSine?.visibility = View.VISIBLE
-            rbCarrierSine?.let { setMarginStartDp(it, 0) }
-            if (rbCarrierSine != null) ensureIndex(rgCarrier, rbCarrierSine, 0)
-            rbCarrierSine?.let { rgCarrier.check(it.id) }
-        }
-        //调整位置
-        fun applyModulatedCarrierUi() {
-            rbCarrierBi?.visibility = View.VISIBLE
-            rbCarrierSine?.visibility = View.VISIBLE
-            if (rbCarrierBi != null) {
-                setMarginStartDp(rbCarrierBi, 0)
-                ensureIndex(rgCarrier, rbCarrierBi, 0)
-            }
-            if (rbCarrierSine != null) {
-                setMarginStartDp(rbCarrierSine, 10)
-                ensureIndex(rgCarrier, rbCarrierSine, 1)
-            }
-            rbCarrierBi?.let { rgCarrier.check(it.id) }
-        }
-
-        // 首帧：按当前刺激类型应用一次（默认干扰电的话就会强制正弦）
-        val isInterference = rbInterference?.isChecked ?: true
-        if (isInterference) applyInterferenceCarrierUi() else applyModulatedCarrierUi()
-
-        // 切换刺激类型时动态更新
-        rgStim.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                rbInterference?.id -> applyInterferenceCarrierUi()
-                rbModulated?.id -> applyModulatedCarrierUi()
-                else -> applyInterferenceCarrierUi()
-            }
-        }
-    }
-
-    //中频不同刺激类型对应 不同调制波形
-    fun bindMidModulationWaveformByStimTypeOnce() {
-        val cardMid = findViewById<View>(R.id.midFrequency)
-
-        val tagKey = 0xCC030102.toInt()
-        if (cardMid.getTag(tagKey) == true) return
-        cardMid.setTag(tagKey, true)
-
-        val rgStim = cardMid.findViewById<RadioGroup?>(R.id.rg_stim_sub_mode_mid) ?: return
-        val rbInterference = cardMid.findViewById<RadioButton?>(R.id.rb_stim_mid_interference)
-        val rbModulated = cardMid.findViewById<RadioButton?>(R.id.rb_stim_mid_modulated)
-
-        val rgMod = cardMid.findViewById<RadioGroup?>(R.id.rg_mid_modulationWaveform) ?: return
-        val rbSine = cardMid.findViewById<RadioButton?>(R.id.rb_mid_mod_sine) ?: return
-        val rbBi = cardMid.findViewById<RadioButton?>(R.id.rb_mid_mod_biphasic_square) ?: return
-        val rbTri = cardMid.findViewById<RadioButton?>(R.id.rb_mid_mod_triangle) ?: return
-
-        fun applyInterferenceModUi() {
-            // 干扰电：只显示三角波（并让它当第一个，避免左侧间距变化）
-            rbSine.visibility = View.GONE
-            rbBi.visibility = View.GONE
-            rbTri.visibility = View.VISIBLE
-
-            // 三角波当第一个：marginStart=0 + index=0
-            setMarginStartDp(rbTri, 0)
-            ensureIndex(rgMod, rbTri, 0)
-
-            rgMod.check(rbTri.id)
-        }
-
-        fun applyModulatedModUi() {
-            // 调制中频：显示三个，默认正弦
-            rbSine.visibility = View.VISIBLE
-            rbBi.visibility = View.VISIBLE
-            rbTri.visibility = View.VISIBLE
-
-            // 恢复顺序：正弦(0) 双相方波(1) 三角(2)
-            setMarginStartDp(rbSine, 0)
-            ensureIndex(rgMod, rbSine, 0)
-
-            setMarginStartDp(rbBi, 10)
-            ensureIndex(rgMod, rbBi, 1)
-
-            setMarginStartDp(rbTri, 10)
-            ensureIndex(rgMod, rbTri, 2)
-
-            rgMod.check(rbSine.id)
-        }
-
-        // 首帧：按当前刺激类型应用一次（默认干扰电 -> 强制三角）
-        val isInterference = rbInterference?.isChecked ?: true
-        if (isInterference) applyInterferenceModUi() else applyModulatedModUi()
-
-        // 切换刺激类型时动态更新
-        rgStim.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                rbInterference?.id -> applyInterferenceModUi()
-                rbModulated?.id -> applyModulatedModUi()
-                else -> applyInterferenceModUi()
-            }
-        }
-    }
 
     //读取中频刺激类型
     private fun readMiddleParamModeFromCard(): Int {

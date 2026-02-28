@@ -248,7 +248,8 @@
                         <RadioButton
                             android:id="@+id/rb_mid_carrier_biphasic_square"
                             style="@style/text.tab.parameter"
-                            android:text="双相方波" />
+                            android:text="双相方波"
+                            android:checked="true" />
 
                         <!-- 干扰电时唯一选项：正弦波（也可保留） -->
                         <RadioButton
@@ -281,7 +282,9 @@
                         <RadioButton
                             android:id="@+id/rb_mid_mod_sine"
                             style="@style/text.tab.parameter"
-                            android:text="正弦波" />
+                            android:text="正弦波"
+                            android:checked="true"
+                            />
 
                         <RadioButton
                             android:id="@+id/rb_mid_mod_biphasic_square"
@@ -318,9 +321,103 @@
                 app:layout_row="1"
                 app:layout_rowWeight="1">
 
-                <FrameLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:padding="12dp">
+
+                    <!-- 第一行：刺激模式 + bio -->
+                    <TextView
+                        android:id="@+id/tv_stim_bio_mode"
+                        style="@style/text.title.column"
+                        android:text="刺激模式: "
+                        android:layout_marginTop="2dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_stim_mode_bio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_stim_bio_mode"
+                        app:layout_constraintStart_toEndOf="@id/tv_stim_bio_mode"
+                        app:layout_constraintTop_toTopOf="@id/tv_stim_bio_mode">
+
+                        <RadioButton
+                            android:id="@+id/rb_stim_bio_frequency"
+                            style="@style/text.tab.parameter"
+                            android:text="中频"
+                            android:checked="true"/>
+                    </RadioGroup>
+
+                    <!-- 第二行：刺激类型 -->
+                    <TextView
+                        android:id="@+id/tv_stim_bio_sub_mode"
+                        style="@style/text.title.column"
+                        android:layout_marginTop="10dp"
+                        android:text="刺激类型: "
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_stim_bio_mode" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_stim_sub_mode_bio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_stim_bio_sub_mode"
+                        app:layout_constraintStart_toEndOf="@id/tv_stim_bio_sub_mode"
+                        app:layout_constraintTop_toTopOf="@id/tv_stim_bio_sub_mode">
+
+                        <RadioButton
+                            android:id="@+id/rb_stim_bio_ets"
+                            style="@style/text.tab.parameter"
+                            android:text="ETS"
+                            android:checked="true" />
+
+                        <RadioButton
+                            android:id="@+id/rb_stim_bio_ccfes"
+                            style="@style/text.tab.parameter"
+                            android:layout_marginStart="10dp"
+                            android:text="CCFES" />
+                    </RadioGroup>
+
+
+                    <!-- 第三行：载波波形 -->
+                    <TextView
+                        android:id="@+id/tv_carrier_bio_waveform"
+                        style="@style/text.title.column"
+                        android:layout_marginTop="10dp"
+                        android:text="载波波形: "
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_stim_bio_sub_mode" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_bio_waveform"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="@id/tv_carrier_bio_waveform"
+                        app:layout_constraintStart_toEndOf="@id/tv_carrier_bio_waveform"
+                        app:layout_constraintTop_toTopOf="@id/tv_carrier_bio_waveform">
+
+                        <!-- 双相方波 -->
+                        <RadioButton
+                            android:id="@+id/rb_bio_carrier_biphasic_square"
+                            style="@style/text.tab.parameter"
+                            android:text="双相方波"
+                            android:checked="true" />
+
+                    </RadioGroup>
+
+
+
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
             <!-- 右下2 -->
