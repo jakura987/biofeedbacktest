@@ -26,7 +26,7 @@ class ChannelVO(
 
     var riseProgress: Int
         get() {
-            val sec = dto.riseTime ?: 0.0
+            val sec = dto.riseTime ?: 3.0
             return kotlin.math.round(sec / 0.5).toInt().coerceIn(0, 40)
         }
         set(value) {
@@ -36,7 +36,7 @@ class ChannelVO(
 
     var descendProgress: Int
         get() {
-            val sec = dto.fallTime ?: 0.0
+            val sec = dto.fallTime ?: 3.0
             return kotlin.math.round(sec / 0.5).toInt().coerceIn(0, 40)
         }
         set(value) {
@@ -46,7 +46,7 @@ class ChannelVO(
 
     var restProgress: Int
         get() {
-            val sec = dto.restTime ?: 0.0
+            val sec = dto.restTime ?: 2.0
             return kotlin.math.round(sec / 0.5).toInt().coerceIn(0, 40)
         }
         set(value) {
@@ -56,7 +56,7 @@ class ChannelVO(
 
     var sustainProgress: Int
         get() {
-            val sec = dto.sustainTime ?: 0.0
+            val sec = dto.sustainTime ?: 2.0
             return kotlin.math.round(sec / 0.5).toInt().coerceIn(0, 40)
         }
         set(value) {
@@ -66,7 +66,7 @@ class ChannelVO(
 
     var widthProgress: Int
         get() {
-            val width = dto.width ?: 0
+            val width = dto.width ?: 100
             return (width / 10).coerceIn(0, 100_000)
         }
         set(value) {
