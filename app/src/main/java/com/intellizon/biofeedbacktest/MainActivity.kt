@@ -280,27 +280,46 @@ class MainActivity : AppCompatActivity() {
             initStepSeekbarUi(root, R.id.seek_width, R.id.iv_minus_width, R.id.iv_add_width, 100000, 10.0, decimals = 0)
             initStepSeekbarUi(root, R.id.seek_intensity, R.id.iv_minus_intensity, R.id.iv_add_intensity, 4, 25.0, decimals = 0)
 
-            // tiload：0..10 step 0.5
             initStepSeekbarUi(root, R.id.seek_tiload, R.id.iv_minus_tiload, R.id.iv_add_tiload, 20, 0.5, decimals = 1)
 
             initStepSeekbarUi(root, R.id.seek_modulationFreq, R.id.iv_minus_modulationFreq, R.id.iv_add_modulationFreq, 150, 1.0, decimals = 0)
 
+            // 动态周期 0..10
             initStepSeekbarUi(root, R.id.seek_dynamicShifts, R.id.iv_minus_dynamicShifts, R.id.iv_add_dynamicShifts, 10, 1.0, decimals = 0)
+
+            // 差频周期 0..30
             initStepSeekbarUi(root, R.id.seek_frequencyShift, R.id.iv_minus_frequencyShift, R.id.iv_add_frequencyShift, 30, 1.0, decimals = 0)
+
+            // 差频频率 max 0..200
             initStepSeekbarUi(root, R.id.seek_frequencyMax, R.id.iv_minus_frequencyMax, R.id.iv_add_frequencyMax, 200, 1.0, decimals = 0)
 
+            // 差频频率 min（你的特殊规则）
             initFrequencyMinUi(root, R.id.seek_freq, R.id.iv_minus_freq, R.id.iv_add_freq)
         }
 
-        fun initBoth(channelContent: View, interId: Int, modId: Int) {
-            channelContent.findViewById<View?>(interId)?.let { initOne(it) }
-            channelContent.findViewById<View?>(modId)?.let { initOne(it) }
+        /**
+         * ✅ 通用初始化：
+         * - 中频：content 里能找到 inter/mod include -> 两套都 init
+         * - 低频：找不到 inter/mod -> 直接 init content
+         */
+        fun initChannel(content: View?, interId: Int, modId: Int) {
+            if (content == null) return
+
+            val inter = content.findViewById<View?>(interId)
+            val mod = content.findViewById<View?>(modId)
+
+            if (inter != null || mod != null) {
+                inter?.let { initOne(it) }
+                mod?.let { initOne(it) }
+            } else {
+                initOne(content)
+            }
         }
 
-        initBoth(overlay.findViewById(R.id.expContentA), R.id.incMidInterferenceA, R.id.incMidModulationA)
-        initBoth(overlay.findViewById(R.id.expContentB), R.id.incMidInterferenceB, R.id.incMidModulationB)
-        initBoth(overlay.findViewById(R.id.expContentC), R.id.incMidInterferenceC, R.id.incMidModulationC)
-        initBoth(overlay.findViewById(R.id.expContentD), R.id.incMidInterferenceD, R.id.incMidModulationD)
+        initChannel(overlay.findViewById<View?>(R.id.expContentA), R.id.incMidInterferenceA, R.id.incMidModulationA)
+        initChannel(overlay.findViewById<View?>(R.id.expContentB), R.id.incMidInterferenceB, R.id.incMidModulationB)
+        initChannel(overlay.findViewById<View?>(R.id.expContentC), R.id.incMidInterferenceC, R.id.incMidModulationC)
+        initChannel(overlay.findViewById<View?>(R.id.expContentD), R.id.incMidInterferenceD, R.id.incMidModulationD)
     }
 
     private fun bindDoubleTapCloseToTitlesOnce(overlay: View) {
@@ -449,7 +468,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
     //读取中频刺激类型
     private fun readMiddleParamModeFromCard(): Int {
