@@ -178,6 +178,28 @@ class ChannelVO(
             dto = dto.copy(frequencyMax = p * 1.0)
         }
 
+    //收缩（生物反馈）
+    var contractionTimeProgress: Int
+        get() {
+            val max = dto.contractionTimeSec
+            return max.coerceIn(0, 20)
+        }
+        set(value) {
+            val p = value.coerceIn(0, 20)
+            dto = dto.copy(contractionTimeSec = p )
+        }
+
+    //放松（生物反馈）
+    var stimulationTimeProgress: Int
+        get() {
+            val max = dto.stimulationTimeSec
+            return max.coerceIn(0, 20)
+        }
+        set(value) {
+            val p = value.coerceIn(0, 20)
+            dto = dto.copy(stimulationTimeSec = p )
+        }
+
 
     fun pushSnapshot() {
         snapshots.push(dto)

@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.intellizon.biofeedbacktest.databinding.ViewBiofreqExpandedOverlayBinding
 import com.intellizon.biofeedbacktest.databinding.ViewLowfreqExpandedOverlayBinding
 import com.intellizon.biofeedbacktest.databinding.ViewMidfreqExpandedOverlayBinding
 import com.intellizon.biofeedbacktest.domain.ChannelDetail
@@ -45,7 +46,7 @@ class MainActivity : AppCompatActivity() {
     private val overlayIds = intArrayOf(
         R.id.lowFreqExpandedOverlay,
         R.id.middleExpandedOverlay,
-        // R.id.otherExpandedOverlay,
+        R.id.bioExpandedOverlay,
     )
 
     private val therapyVO = TherapyVO(
@@ -108,6 +109,23 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        // 双击 bioFrequency 进入 overlay
+        val cardBio = findViewById<View>(R.id.bioFrequency)
+        val enterBioDetector =
+            GestureDetector(
+                this,
+                object : GestureDetector.SimpleOnGestureListener() {
+                    override fun onDoubleTap(e: MotionEvent): Boolean {
+                        showOverlay(R.id.bioExpandedOverlay)
+                        return true
+                    }
+                },
+            )
+        cardBio.setOnTouchListener { _, event ->
+            enterBioDetector.onTouchEvent(event)
+            true
+        }
+
         // Back：优先收起 overlay
         onBackPressedDispatcher.addCallback(this) {
             if (activeOverlay != null) {
@@ -154,6 +172,7 @@ class MainActivity : AppCompatActivity() {
                 bindDoubleTapCloseToTitlesOnce(overlay)
             }
 
+
             R.id.middleExpandedOverlay -> {
                 therapyVO.modifiedDto = therapyVO.modifiedDto.copy(mode = TherapyMode.MIDDLE)
                 val paramMode  = readMiddleParamModeFromCard()
@@ -179,6 +198,31 @@ class MainActivity : AppCompatActivity() {
                 bindChannelsForOverlayOnce(overlay)
                 bindCenterInfoButtonOnce(overlay, TherapyMode.MIDDLE)
                 bindDoubleTapCloseToTitlesOnce(overlay) // 中频布局里有 tvTitleA 才行
+            }
+
+
+            R.id.bioExpandedOverlay -> {
+                therapyVO.modifiedDto = therapyVO.modifiedDto.copy(mode = TherapyMode.BIOFEEDBACK)
+                TherapyChannelApplier.applyWaveformToAllChannels(
+                    therapyVO = therapyVO,
+                    mode = TherapyMode.BIOFEEDBACK,
+                    wf = Waveform.BIPHASIC_SQUARE
+                )
+                val paramMode  = readBioParamModeFromCard()
+                TherapyChannelApplier.applyParamModeToAllChannels(therapyVO, TherapyMode.BIOFEEDBACK, paramMode)
+
+                prepareVos(TherapyMode.BIOFEEDBACK)
+
+                val binding = DataBindingUtil.bind<ViewBiofreqExpandedOverlayBinding>(overlay)
+                binding?.voA = voA
+                binding?.voB = voB
+                binding?.voC = voC
+                binding?.voD = voD
+                binding?.lifecycleOwner = this
+
+                bindChannelsForOverlayOnce(overlay)
+                bindCenterInfoButtonOnce(overlay, TherapyMode.LOW_FREQUENCY)
+                bindDoubleTapCloseToTitlesOnce(overlay)
             }
         }
     }
@@ -298,7 +342,7 @@ class MainActivity : AppCompatActivity() {
         /**
          * ✅ 通用初始化：
          * - 中频：content 里能找到 inter/mod include -> 两套都 init
-         * - 低频：找不到 inter/mod -> 直接 init content
+         * - 低频/BIO：找不到 inter/mod -> 直接 init content
          */
         fun initChannel(content: View?, interId: Int, modId: Int) {
             if (content == null) return
@@ -352,7 +396,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+
     //读取中频刺激类型
+    @TherapyParamMode
     private fun readMiddleParamModeFromCard(): Int {
         val cardMid = findViewById<View>(R.id.midFrequency)
         val rbInterference = cardMid.findViewById<RadioButton>(R.id.rb_stim_mid_interference)
@@ -388,6 +434,19 @@ class MainActivity : AppCompatActivity() {
             R.id.rb_mid_mod_biphasic_square -> Waveform.BIPHASIC_SQUARE
             R.id.rb_mid_mod_triangle -> Waveform.TRIANGLE
             else -> Waveform.TRIANGLE // 干扰电默认
+        }
+    }
+
+    //读取生物反馈刺激类型
+    @TherapyParamMode
+    private fun readBioParamModeFromCard(): Int {
+        val cardMid = findViewById<View>(R.id.bioFrequency)
+        val rbEts = cardMid.findViewById<RadioButton>(R.id.rb_stim_bio_ets)
+        // 默认干扰电
+        return if (rbEts.isChecked) {
+            TherapyParamMode.BIOFEEDBACK_ETS  // 0x51
+        } else {
+            TherapyParamMode.BIOFEEDBACK_CCFES  // 0x52
         }
     }
 

@@ -59,7 +59,7 @@
                     android:id="@+id/tvTitleA"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="通道A(低频)"
+                    android:text="通道A(生物反馈)"
                     android:textStyle="bold"
                     android:textSize="16sp"
                     android:maxLines="1"
@@ -67,7 +67,7 @@
 
                 <include
                     android:id="@+id/expContentA"
-                    layout="@layout/view_channel_a_low_frequency"
+                    layout="@layout/view_channel_a_bio_frequency"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:channelVo="@{voA}" />
@@ -97,7 +97,7 @@
                     android:id="@+id/tvTitleB"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="通道B(低频)"
+                    android:text="通道B(生物反馈)"
                     android:textStyle="bold"
                     android:textSize="16sp"
                     android:maxLines="1"
@@ -106,7 +106,7 @@
                 <!-- 先复用同一套 low_frequency 布局跑通 delay -->
                 <include
                     android:id="@+id/expContentB"
-                    layout="@layout/view_channel_a_low_frequency"
+                    layout="@layout/view_channel_a_bio_frequency"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:channelVo="@{voB}" />
@@ -136,7 +136,7 @@
                     android:id="@+id/tvTitleC"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="通道C(低频)"
+                    android:text="通道C(生物反馈)"
                     android:textStyle="bold"
                     android:textSize="16sp"
                     android:maxLines="1"
@@ -144,7 +144,7 @@
 
                 <include
                     android:id="@+id/expContentC"
-                    layout="@layout/view_channel_a_low_frequency"
+                    layout="@layout/view_channel_a_bio_frequency"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:channelVo="@{voC}" />
@@ -174,7 +174,7 @@
                     android:id="@+id/tvTitleD"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="通道D(低频)"
+                    android:text="通道D(生物反馈)"
                     android:textStyle="bold"
                     android:textSize="16sp"
                     android:maxLines="1"
@@ -182,7 +182,7 @@
 
                 <include
                     android:id="@+id/expContentD"
-                    layout="@layout/view_channel_a_low_frequency"
+                    layout="@layout/view_channel_a_bio_frequency"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:channelVo="@{voD}" />

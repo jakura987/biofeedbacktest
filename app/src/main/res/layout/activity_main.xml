@@ -309,7 +309,7 @@
 
             <!-- 右下 -->
             <androidx.cardview.widget.CardView
-                android:id="@+id/card3"
+                android:id="@+id/bioFrequency"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_margin="8dp"
@@ -348,7 +348,7 @@
                         <RadioButton
                             android:id="@+id/rb_stim_bio_frequency"
                             style="@style/text.tab.parameter"
-                            android:text="中频"
+                            android:text="生物反馈"
                             android:checked="true"/>
                     </RadioGroup>
 
@@ -451,6 +451,11 @@
         <include
             android:id="@+id/middleExpandedOverlay"
             layout="@layout/view_midfreq_expanded_overlay"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/bioExpandedOverlay"
+            layout="@layout/view_biofreq_expanded_overlay"
             android:visibility="gone" />
     </FrameLayout>
 
