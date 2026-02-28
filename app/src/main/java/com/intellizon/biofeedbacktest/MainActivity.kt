@@ -5,9 +5,11 @@ import android.os.Bundle
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.widget.CheckBox
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.IdRes
@@ -285,11 +287,30 @@ class MainActivity : AppCompatActivity() {
         btn.text = "commit"
 
         btn.setOnClickListener {
+
+            // 1) 读勾选状态（注意：必须从 overlay 找，因为每个 overlay 里都有一套）
+            val hasA = overlay.findViewById<CheckBox>(R.id.cbSelectA)?.isChecked == true
+            val hasB = overlay.findViewById<CheckBox>(R.id.cbSelectB)?.isChecked == true
+            val hasC = overlay.findViewById<CheckBox>(R.id.cbSelectC)?.isChecked == true
+            val hasD = overlay.findViewById<CheckBox>(R.id.cbSelectD)?.isChecked == true
+
+            if (!(hasA || hasB || hasC || hasD)) {
+                Toast.makeText(overlay.context, "请至少选择一个通道", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            therapyVO.modifiedDto = therapyVO.modifiedDto.copy(
+                hasChannelA = hasA,
+                hasChannelB = hasB,
+                hasChannelC = hasC,
+                hasChannelD = hasD,
+            )
+
             // ✅ commit：把最新 dto 落到指定 mode
-            therapyVO.putChannel(mode, voA.dto)
-            therapyVO.putChannel(mode, voB.dto)
-            therapyVO.putChannel(mode, voC.dto)
-            therapyVO.putChannel(mode, voD.dto)
+            if (hasA) therapyVO.putChannel(mode, voA.dto)
+            if (hasB) therapyVO.putChannel(mode, voB.dto)
+            if (hasC) therapyVO.putChannel(mode, voC.dto)
+            if (hasD) therapyVO.putChannel(mode, voD.dto)
 
             Timber.d(
                 """
