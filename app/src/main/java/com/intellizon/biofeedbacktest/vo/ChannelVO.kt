@@ -76,7 +76,7 @@ class ChannelVO(
 
     var totalTimeProgress: Int
         get() {
-            val totalTime = dto.totalTime ?: 0
+            val totalTime = dto.totalTime ?: 5
             return totalTime.coerceIn(0, 99)
         }
         set(value) {
@@ -108,6 +108,76 @@ class ChannelVO(
             }
             dto = dto.copy(frequencyMin = f)
         }
+
+
+    var intensityProgress: Int
+        get() {
+            val intensity = dto.presetIntensity ?: 75
+            return (intensity / 25).coerceIn(0, 4)
+
+        }
+        set(value) {
+            val p = value.coerceIn(0, 4)
+            // progress -> 实际值：0/25/50/75/100
+            dto = dto.copy(presetIntensity = p * 25)
+        }
+
+
+    var tiloadProgress: Int
+        get() {
+            val tiload = dto.tiLoadFreq ?: 4.0
+            return kotlin.math.round(tiload / 0.5).toInt().coerceIn(0, 20)
+        }
+        set(value) {
+            val p = value.coerceIn(0, 20)
+            dto = dto.copy(tiLoadFreq = p * 0.5)
+        }
+
+
+    var modulationFreqProgress: Int
+        get() {
+            val tiload = dto.modulationFreq ?: 1
+            return tiload.coerceIn(0, 150)
+        }
+        set(value) {
+            val p = value.coerceIn(0, 150)
+            dto = dto.copy(modulationFreq = p)
+        }
+
+
+    //动态周期(中频)
+    var dynamicShiftProgress: Int
+        get() {
+            val dynamicShift = dto.dynamicShifts ?: 4
+            return dynamicShift.coerceIn(0, 10)
+        }
+        set(value) {
+            val p = value.coerceIn(0, 10)
+            dto = dto.copy(dynamicShifts = p)
+        }
+
+    //差频周期(中频)
+    var frequencyShiftProgress: Int
+        get() {
+            val dynamicShift = dto.frequencyShift ?: 15
+            return dynamicShift.coerceIn(0, 30)
+        }
+        set(value) {
+            val p = value.coerceIn(0, 30)
+            dto = dto.copy(frequencyShift = p)
+        }
+
+    //差频频率(中频)
+    var frequencyMaxProgress: Int
+        get() {
+            val max = dto.frequencyMax ?: 40.0
+            return kotlin.math.round(max / 1.0).toInt().coerceIn(0, 200)
+        }
+        set(value) {
+            val p = value.coerceIn(0, 200)
+            dto = dto.copy(frequencyMax = p * 1.0)
+        }
+
 
     fun pushSnapshot() {
         snapshots.push(dto)

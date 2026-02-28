@@ -36,6 +36,7 @@ object SeekbarUiBinder {
             String.format(Locale.US, "%.${decimals}f", v)
         }
         seek.notifyRefresh()
+        //seek.post { seek.notifyRefresh() }
 
         minus.setOnClickListener {
             seek.progress = (seek.progress - 1).coerceAtLeast(0)

@@ -10,6 +10,8 @@ import androidx.appcompat.widget.AppCompatSeekBar;
 import java.util.HashSet;
 import java.util.Set;
 
+import timber.log.Timber;
+
 /**
  * Created by Lenovo on 2024/12/3.
  */
@@ -51,6 +53,14 @@ public class RyCompactSeekbar extends AppCompatSeekBar {
         if (thumb instanceof OnSeekBarChangeListener) {
             setOnSeekBarChangeListener((OnSeekBarChangeListener) thumb);
         }
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        // ✅ 等布局完成后再刷新一次，保证 thumb 能拿到正确 width
+        //Timber.v("RyCompactSeekbar onSizeChanged %dx%d old=%dx%d", w, h, oldw, oldh);
+        post(this::notifyRefresh);
     }
 
 

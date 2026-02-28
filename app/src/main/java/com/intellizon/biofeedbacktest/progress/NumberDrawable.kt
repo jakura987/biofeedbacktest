@@ -126,6 +126,8 @@ class NumberDrawable : Drawable(), SeekBar.OnSeekBarChangeListener {
         invalidateSelf()
     }
 
+
+
     private var state = 0
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {

@@ -10,6 +10,7 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.intellizon.biofeedbacktest.databinding.ViewLowfreqExpandedOverlayBinding
@@ -73,6 +74,7 @@ class MainActivity : AppCompatActivity() {
         Timber.d("version name: ${BuildConfig.VERSION_NAME}")
 
         bindMidCarrierWaveformByStimTypeOnce()
+        bindMidModulationWaveformByStimTypeOnce()
 
         // 双击 lowFrequency 进入 overlay
         val cardLow = findViewById<View>(R.id.lowFrequency)
@@ -86,12 +88,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 },
             )
-
         cardLow.setOnTouchListener { _, event ->
             enterLowDetector.onTouchEvent(event)
             true
         }
-
 
         // 双击 midFrequency 进入 overlay
         val cardMid = findViewById<View>(R.id.midFrequency)
@@ -105,7 +105,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 },
             )
-
         cardMid.setOnTouchListener { _, event ->
             enterMidDetector.onTouchEvent(event)
             true
@@ -161,9 +160,10 @@ class MainActivity : AppCompatActivity() {
                 therapyVO.modifiedDto = therapyVO.modifiedDto.copy(mode = TherapyMode.MIDDLE)
                 val paramMode  = readMiddleParamModeFromCard()
                 val waveform = readMiddleWaveformFromCard()
+                val modulationWaveform = readMiddleModulationWaveformFromCard()
                 TherapyChannelApplier.applyParamModeToAllChannels(therapyVO, TherapyMode.MIDDLE, paramMode)
                 TherapyChannelApplier.applyWaveformToAllChannels(therapyVO, TherapyMode.MIDDLE, waveform)
-
+                TherapyChannelApplier.applyModulationWaveformToAllChannels(therapyVO, TherapyMode.MIDDLE, modulationWaveform)
 
                 prepareVos(TherapyMode.MIDDLE)
 
@@ -174,11 +174,56 @@ class MainActivity : AppCompatActivity() {
                 binding?.voD = voD
                 binding?.lifecycleOwner = this
 
-                bindChannelsForOverlayOnce(overlay) // 你刚改了缺控件会跳过，OK
+                //中频双击不同布局
+                val isInterference = (paramMode == TherapyParamMode.MIDDLE_INTERFERENCE)
+                applyMiddleStimTypeUi(overlay, isInterference)
+
+                bindChannelsForOverlayOnce(overlay)
                 bindCenterInfoButtonOnce(overlay, TherapyMode.MIDDLE)
-                bindDoubleTapCloseToTitlesOnce(overlay) // 你中频布局里有 tvTitleA 才行
+                bindDoubleTapCloseToTitlesOnce(overlay) // 中频布局里有 tvTitleA 才行
             }
         }
+    }
+
+    //中频双击不同布局
+    private fun applyMiddleStimTypeUi(overlay: View, isInterference: Boolean) {
+        toggleMidUi(
+            channelRoot = overlay.findViewById(R.id.expContentA),
+            isInterference = isInterference,
+            interId = R.id.incMidInterferenceA,
+            modId = R.id.incMidModulationA,
+        )
+        toggleMidUi(
+            channelRoot = overlay.findViewById(R.id.expContentB),
+            isInterference = isInterference,
+            interId = R.id.incMidInterferenceB,
+            modId = R.id.incMidModulationB,
+        )
+        toggleMidUi(
+            channelRoot = overlay.findViewById(R.id.expContentC),
+            isInterference = isInterference,
+            interId = R.id.incMidInterferenceC,
+            modId = R.id.incMidModulationC,
+        )
+        toggleMidUi(
+            channelRoot = overlay.findViewById(R.id.expContentD),
+            isInterference = isInterference,
+            interId = R.id.incMidInterferenceD,
+            modId = R.id.incMidModulationD,
+        )
+    }
+
+    private fun toggleMidUi(channelRoot: View, isInterference: Boolean, @IdRes interId: Int, @IdRes modId: Int, ) {
+        val incInterference = channelRoot.findViewById<View?>(interId)
+        val incModulation = channelRoot.findViewById<View?>(modId)
+
+        if (incInterference == null || incModulation == null) {
+            Timber.w("toggleMidUi missing include: inter=%s mod=%s", interId, modId)
+            return
+        }
+
+        incInterference.visibility = if (isInterference) View.VISIBLE else View.GONE
+        incModulation.visibility = if (isInterference) View.GONE else View.VISIBLE
     }
 
 
@@ -225,23 +270,37 @@ class MainActivity : AppCompatActivity() {
         overlay.setTag(TAG_BOUND, true)
 
         fun initOne(root: View) {
-            // delay: 0..20 step 0.5 => progress 0..40
-            initStepSeekbarUi(root = root, seekId = R.id.seek_delay, minusId = R.id.iv_minus_delay, plusId = R.id.iv_add_delay, maxProgress = 40, stepValue = 0.5)
+            initStepSeekbarUi(root, R.id.seek_delay, R.id.iv_minus_delay, R.id.iv_add_delay, 40, 0.5)
             initStepSeekbarUi(root, R.id.seek_rise, R.id.iv_minus_rise, R.id.iv_add_rise, 40, 0.5)
             initStepSeekbarUi(root, R.id.seek_fall, R.id.iv_minus_fall, R.id.iv_add_fall, 40, 0.5)
             initStepSeekbarUi(root, R.id.seek_rest, R.id.iv_minus_rest, R.id.iv_add_rest, 40, 0.5)
             initStepSeekbarUi(root, R.id.seek_sustain, R.id.iv_minus_sustain, R.id.iv_add_sustain, 40, 0.5)
             initStepSeekbarUi(root, R.id.seek_total, R.id.iv_minus_total, R.id.iv_add_total, 99, 1.0, decimals = 0)
+
             initStepSeekbarUi(root, R.id.seek_width, R.id.iv_minus_width, R.id.iv_add_width, 100000, 10.0, decimals = 0)
+            initStepSeekbarUi(root, R.id.seek_intensity, R.id.iv_minus_intensity, R.id.iv_add_intensity, 4, 25.0, decimals = 0)
 
-            initFrequencyMinUi(root = root, seekId = R.id.seek_freq, minusId = R.id.iv_minus_freq, plusId = R.id.iv_add_freq)
+            // tiload：0..10 step 0.5
+            initStepSeekbarUi(root, R.id.seek_tiload, R.id.iv_minus_tiload, R.id.iv_add_tiload, 20, 0.5, decimals = 1)
 
+            initStepSeekbarUi(root, R.id.seek_modulationFreq, R.id.iv_minus_modulationFreq, R.id.iv_add_modulationFreq, 150, 1.0, decimals = 0)
+
+            initStepSeekbarUi(root, R.id.seek_dynamicShifts, R.id.iv_minus_dynamicShifts, R.id.iv_add_dynamicShifts, 10, 1.0, decimals = 0)
+            initStepSeekbarUi(root, R.id.seek_frequencyShift, R.id.iv_minus_frequencyShift, R.id.iv_add_frequencyShift, 30, 1.0, decimals = 0)
+            initStepSeekbarUi(root, R.id.seek_frequencyMax, R.id.iv_minus_frequencyMax, R.id.iv_add_frequencyMax, 200, 1.0, decimals = 0)
+
+            initFrequencyMinUi(root, R.id.seek_freq, R.id.iv_minus_freq, R.id.iv_add_freq)
         }
 
-        initOne(overlay.findViewById(R.id.expContentA))
-        initOne(overlay.findViewById(R.id.expContentB))
-        initOne(overlay.findViewById(R.id.expContentC))
-        initOne(overlay.findViewById(R.id.expContentD))
+        fun initBoth(channelContent: View, interId: Int, modId: Int) {
+            channelContent.findViewById<View?>(interId)?.let { initOne(it) }
+            channelContent.findViewById<View?>(modId)?.let { initOne(it) }
+        }
+
+        initBoth(overlay.findViewById(R.id.expContentA), R.id.incMidInterferenceA, R.id.incMidModulationA)
+        initBoth(overlay.findViewById(R.id.expContentB), R.id.incMidInterferenceB, R.id.incMidModulationB)
+        initBoth(overlay.findViewById(R.id.expContentC), R.id.incMidInterferenceC, R.id.incMidModulationC)
+        initBoth(overlay.findViewById(R.id.expContentD), R.id.incMidInterferenceD, R.id.incMidModulationD)
     }
 
     private fun bindDoubleTapCloseToTitlesOnce(overlay: View) {
@@ -328,6 +387,69 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //中频不同刺激类型对应 不同调制波形
+    fun bindMidModulationWaveformByStimTypeOnce() {
+        val cardMid = findViewById<View>(R.id.midFrequency)
+
+        val tagKey = 0xCC030102.toInt()
+        if (cardMid.getTag(tagKey) == true) return
+        cardMid.setTag(tagKey, true)
+
+        val rgStim = cardMid.findViewById<RadioGroup?>(R.id.rg_stim_sub_mode_mid) ?: return
+        val rbInterference = cardMid.findViewById<RadioButton?>(R.id.rb_stim_mid_interference)
+        val rbModulated = cardMid.findViewById<RadioButton?>(R.id.rb_stim_mid_modulated)
+
+        val rgMod = cardMid.findViewById<RadioGroup?>(R.id.rg_mid_modulationWaveform) ?: return
+        val rbSine = cardMid.findViewById<RadioButton?>(R.id.rb_mid_mod_sine) ?: return
+        val rbBi = cardMid.findViewById<RadioButton?>(R.id.rb_mid_mod_biphasic_square) ?: return
+        val rbTri = cardMid.findViewById<RadioButton?>(R.id.rb_mid_mod_triangle) ?: return
+
+        fun applyInterferenceModUi() {
+            // 干扰电：只显示三角波（并让它当第一个，避免左侧间距变化）
+            rbSine.visibility = View.GONE
+            rbBi.visibility = View.GONE
+            rbTri.visibility = View.VISIBLE
+
+            // 三角波当第一个：marginStart=0 + index=0
+            setMarginStartDp(rbTri, 0)
+            ensureIndex(rgMod, rbTri, 0)
+
+            rgMod.check(rbTri.id)
+        }
+
+        fun applyModulatedModUi() {
+            // 调制中频：显示三个，默认正弦
+            rbSine.visibility = View.VISIBLE
+            rbBi.visibility = View.VISIBLE
+            rbTri.visibility = View.VISIBLE
+
+            // 恢复顺序：正弦(0) 双相方波(1) 三角(2)
+            setMarginStartDp(rbSine, 0)
+            ensureIndex(rgMod, rbSine, 0)
+
+            setMarginStartDp(rbBi, 10)
+            ensureIndex(rgMod, rbBi, 1)
+
+            setMarginStartDp(rbTri, 10)
+            ensureIndex(rgMod, rbTri, 2)
+
+            rgMod.check(rbSine.id)
+        }
+
+        // 首帧：按当前刺激类型应用一次（默认干扰电 -> 强制三角）
+        val isInterference = rbInterference?.isChecked ?: true
+        if (isInterference) applyInterferenceModUi() else applyModulatedModUi()
+
+        // 切换刺激类型时动态更新
+        rgStim.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                rbInterference?.id -> applyInterferenceModUi()
+                rbModulated?.id -> applyModulatedModUi()
+                else -> applyInterferenceModUi()
+            }
+        }
+    }
+
 
     //读取中频刺激类型
     private fun readMiddleParamModeFromCard(): Int {
@@ -341,6 +463,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //读取中频载波波形
     @Waveform
     private fun readMiddleWaveformFromCard():  Int {
         val cardMid = findViewById<View>(R.id.midFrequency)
@@ -351,6 +474,19 @@ class MainActivity : AppCompatActivity() {
             R.id.rb_mid_carrier_biphasic_square -> Waveform.BIPHASIC_SQUARE
             R.id.rb_mid_carrier_sine -> Waveform.SINE
             else -> Waveform.SINE // ✅ 默认（干扰电时就是它）
+        }
+    }
+
+    //读取中频调制波形
+    @Waveform
+    private fun readMiddleModulationWaveformFromCard(): Int {
+        val cardMid = findViewById<View>(R.id.midFrequency)
+        val rg = cardMid.findViewById<RadioGroup?>(R.id.rg_mid_modulationWaveform)
+        return when (rg?.checkedRadioButtonId ?: View.NO_ID) {
+            R.id.rb_mid_mod_sine -> Waveform.SINE
+            R.id.rb_mid_mod_biphasic_square -> Waveform.BIPHASIC_SQUARE
+            R.id.rb_mid_mod_triangle -> Waveform.TRIANGLE
+            else -> Waveform.TRIANGLE // 干扰电默认
         }
     }
 
@@ -384,8 +520,4 @@ class MainActivity : AppCompatActivity() {
         private const val TAG_CENTER_BOUND: Int = 0xCC010006.toInt()
     }
 
-    private fun forceCheckLowHeader(root: View) {
-        root.findViewById<View?>(R.id.rb_stim_low_frequency)?.let { (it as? android.widget.RadioButton)?.isChecked = true }
-        root.findViewById<View?>(R.id.rb_biphasic_square)?.let { (it as? android.widget.RadioButton)?.isChecked = true }
-    }
 }

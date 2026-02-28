@@ -7,6 +7,8 @@ import com.intellizon.biofeedbacktest.R
 import com.intellizon.biofeedbacktest.vo.TherapyVO
 import com.intellizon.biofeedbacktest.domain.ChannelDetail
 import com.intellizon.biofeedbacktest.domain.ChannelName
+import com.intellizon.biofeedbacktest.domain.FrequencyType.Companion.CONSTANT_FREQUENCY
+import com.intellizon.biofeedbacktest.domain.FrequencyType.Companion.VARIABLE_FREQUENCY
 import com.intellizon.biofeedbacktest.domain.TherapyMode
 import com.intellizon.biofeedbacktest.domain.TherapyParamMode
 import com.intellizon.biofeedbacktest.domain.Waveform
@@ -15,9 +17,15 @@ object TherapyChannelApplier {
 
     fun applyParamModeToAllChannels(therapyVO: TherapyVO, @TherapyMode mode: Int, @TherapyParamMode paramMode: Int) {
         therapyVO.modifiedDto = therapyVO.modifiedDto.copy(subMode = paramMode)
+
         for (ch in arrayOf(ChannelName.CHANNEL_A, ChannelName.CHANNEL_B, ChannelName.CHANNEL_C, ChannelName.CHANNEL_D)) {
             val old = therapyVO.getOrCreateChannel(mode, ch)
-            therapyVO.putChannel(mode, old.copy(subMode = paramMode))
+            if(paramMode == TherapyParamMode.MIDDLE_INTERFERENCE){
+                therapyVO.putChannel(mode, old.copy(subMode = paramMode, frequencyType = VARIABLE_FREQUENCY))
+            }else{
+                therapyVO.putChannel(mode, old.copy(subMode = paramMode, frequencyType = CONSTANT_FREQUENCY))
+            }
+
         }
     }
 

@@ -52,6 +52,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:id="@+id/expContentA"
                 android:orientation="vertical"
                 android:padding="12dp">
 
@@ -65,11 +66,22 @@
                     android:maxLines="1"
                     android:ellipsize="end" />
 
+                <!-- 干扰电刺激 UI -->
                 <include
-                    android:id="@+id/expContentA"
-                    layout="@layout/view_channel_a_mid_frequency"
+                    android:id="@+id/incMidInterferenceA"
+                    layout="@layout/view_channel_a_mid_interference_frequency"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:visibility="gone"
+                    app:channelVo="@{voA}" />
+
+                <!-- 调制中频电 UI -->
+                <include
+                    android:id="@+id/incMidModulationA"
+                    layout="@layout/view_channel_a_mid_modulation_frequency"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
                     app:channelVo="@{voA}" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -91,6 +103,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
+                android:id="@+id/expContentB"
                 android:padding="12dp">
 
                 <TextView
@@ -104,11 +117,22 @@
                     android:ellipsize="end" />
 
                 <!-- 先复用同一套 low_frequency 布局跑通 delay -->
+                <!-- 干扰电刺激 UI -->
                 <include
-                    android:id="@+id/expContentB"
-                    layout="@layout/view_channel_a_mid_frequency"
+                    android:id="@+id/incMidInterferenceB"
+                    layout="@layout/view_channel_a_mid_interference_frequency"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:visibility="gone"
+                    app:channelVo="@{voB}" />
+
+                <!-- 调制中频电 UI -->
+                <include
+                    android:id="@+id/incMidModulationB"
+                    layout="@layout/view_channel_a_mid_modulation_frequency"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
                     app:channelVo="@{voB}" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -129,6 +153,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:id="@+id/expContentC"
                 android:orientation="vertical"
                 android:padding="12dp">
 
@@ -142,12 +167,23 @@
                     android:maxLines="1"
                     android:ellipsize="end" />
 
+                <!-- 干扰电刺激 UI -->
                 <include
-                    android:id="@+id/expContentC"
-                    layout="@layout/view_channel_a_mid_frequency"
+                    android:id="@+id/incMidInterferenceC"
+                    layout="@layout/view_channel_a_mid_interference_frequency"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    app:channelVo="@{voC}" />
+                    android:visibility="gone"
+                    app:channelVo="@{voB}" />
+
+                <!-- 调制中频电 UI -->
+                <include
+                    android:id="@+id/incMidModulationC"
+                    layout="@layout/view_channel_a_mid_modulation_frequency"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
+                    app:channelVo="@{voB}" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -168,6 +204,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
+                android:id="@+id/expContentD"
                 android:padding="12dp">
 
                 <TextView
@@ -180,11 +217,22 @@
                     android:maxLines="1"
                     android:ellipsize="end" />
 
+                <!-- 干扰电刺激 UI -->
                 <include
-                    android:id="@+id/expContentD"
-                    layout="@layout/view_channel_a_mid_frequency"
+                    android:id="@+id/incMidInterferenceD"
+                    layout="@layout/view_channel_a_mid_interference_frequency"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:visibility="gone"
+                    app:channelVo="@{voD}" />
+
+                <!-- 调制中频电 UI -->
+                <include
+                    android:id="@+id/incMidModulationD"
+                    layout="@layout/view_channel_a_mid_modulation_frequency"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
                     app:channelVo="@{voD}" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
