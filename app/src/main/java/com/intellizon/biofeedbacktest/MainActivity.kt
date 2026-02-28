@@ -6,6 +6,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
@@ -17,21 +18,18 @@ import com.intellizon.biofeedbacktest.domain.ChannelDetail
 import com.intellizon.biofeedbacktest.domain.ChannelName
 import com.intellizon.biofeedbacktest.domain.TherapyDetail
 import com.intellizon.biofeedbacktest.domain.TherapyMode
-import com.intellizon.biofeedbacktest.domain.TherapyMode.Companion.LOW_FREQUENCY
 import com.intellizon.biofeedbacktest.domain.TherapyParamMode
 import com.intellizon.biofeedbacktest.domain.Waveform
-import com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
-import com.intellizon.biofeedbacktest.ui.ChannelControlsBinder
-import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder
 import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initFrequencyMinUi
-import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initLowHeaderUi
 import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initStepSeekbarUi
 import com.intellizon.biofeedbacktest.util.TherapyChannelApplier
+import com.intellizon.biofeedbacktest.util.TherapyChannelApplier.ensureIndex
+import com.intellizon.biofeedbacktest.util.TherapyChannelApplier.setMarginStartDp
 import com.intellizon.biofeedbacktest.vo.ChannelVO
 import com.intellizon.biofeedbacktest.vo.TherapyVO
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
-import java.util.Locale
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -73,6 +71,8 @@ class MainActivity : AppCompatActivity() {
 
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         Timber.d("version name: ${BuildConfig.VERSION_NAME}")
+
+        bindMidCarrierWaveformByStimTypeOnce()
 
         // 双击 lowFrequency 进入 overlay
         val cardLow = findViewById<View>(R.id.lowFrequency)
@@ -160,8 +160,10 @@ class MainActivity : AppCompatActivity() {
             R.id.middleExpandedOverlay -> {
                 therapyVO.modifiedDto = therapyVO.modifiedDto.copy(mode = TherapyMode.MIDDLE)
                 val paramMode  = readMiddleParamModeFromCard()
-                //暂时不动波形
+                val waveform = readMiddleWaveformFromCard()
                 TherapyChannelApplier.applyParamModeToAllChannels(therapyVO, TherapyMode.MIDDLE, paramMode)
+                TherapyChannelApplier.applyWaveformToAllChannels(therapyVO, TherapyMode.MIDDLE, waveform)
+
 
                 prepareVos(TherapyMode.MIDDLE)
 
@@ -273,6 +275,59 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //中频不同刺激类型对应 不同载波波形
+    fun bindMidCarrierWaveformByStimTypeOnce() {
+        val cardMid = findViewById<View>(R.id.midFrequency)
+
+        val tagKey = 0xCC030101.toInt()
+        if (cardMid.getTag(tagKey) == true) return
+        cardMid.setTag(tagKey, true)
+
+        val rgStim = cardMid.findViewById<RadioGroup?>(R.id.rg_stim_sub_mode_mid) ?: return
+        val rbInterference = cardMid.findViewById<RadioButton?>(R.id.rb_stim_mid_interference)
+        val rbModulated = cardMid.findViewById<RadioButton?>(R.id.rb_stim_mid_modulated)
+
+        val rgCarrier = cardMid.findViewById<RadioGroup?>(R.id.rg_mid_waveform) ?: return
+        val rbCarrierBi = cardMid.findViewById<RadioButton?>(R.id.rb_mid_carrier_biphasic_square)
+        val rbCarrierSine = cardMid.findViewById<RadioButton?>(R.id.rb_mid_carrier_sine)
+
+        //调整位置
+        fun applyInterferenceCarrierUi() {
+            rbCarrierBi?.visibility = View.GONE
+            rbCarrierSine?.visibility = View.VISIBLE
+            rbCarrierSine?.let { setMarginStartDp(it, 0) }
+            if (rbCarrierSine != null) ensureIndex(rgCarrier, rbCarrierSine, 0)
+            rbCarrierSine?.let { rgCarrier.check(it.id) }
+        }
+        //调整位置
+        fun applyModulatedCarrierUi() {
+            rbCarrierBi?.visibility = View.VISIBLE
+            rbCarrierSine?.visibility = View.VISIBLE
+            if (rbCarrierBi != null) {
+                setMarginStartDp(rbCarrierBi, 0)
+                ensureIndex(rgCarrier, rbCarrierBi, 0)
+            }
+            if (rbCarrierSine != null) {
+                setMarginStartDp(rbCarrierSine, 10)
+                ensureIndex(rgCarrier, rbCarrierSine, 1)
+            }
+            rbCarrierBi?.let { rgCarrier.check(it.id) }
+        }
+
+        // 首帧：按当前刺激类型应用一次（默认干扰电的话就会强制正弦）
+        val isInterference = rbInterference?.isChecked ?: true
+        if (isInterference) applyInterferenceCarrierUi() else applyModulatedCarrierUi()
+
+        // 切换刺激类型时动态更新
+        rgStim.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                rbInterference?.id -> applyInterferenceCarrierUi()
+                rbModulated?.id -> applyModulatedCarrierUi()
+                else -> applyInterferenceCarrierUi()
+            }
+        }
+    }
+
 
     //读取中频刺激类型
     private fun readMiddleParamModeFromCard(): Int {
@@ -283,6 +338,19 @@ class MainActivity : AppCompatActivity() {
             TherapyParamMode.MIDDLE_INTERFERENCE   // 0x41
         } else {
             TherapyParamMode.MIDDLE_MODULATED      // 0x43
+        }
+    }
+
+    @Waveform
+    private fun readMiddleWaveformFromCard():  Int {
+        val cardMid = findViewById<View>(R.id.midFrequency)
+        val rgCarrier = cardMid.findViewById<RadioGroup?>(R.id.rg_mid_waveform)
+
+        val checkedId = rgCarrier?.checkedRadioButtonId ?: View.NO_ID
+        return when (checkedId) {
+            R.id.rb_mid_carrier_biphasic_square -> Waveform.BIPHASIC_SQUARE
+            R.id.rb_mid_carrier_sine -> Waveform.SINE
+            else -> Waveform.SINE // ✅ 默认（干扰电时就是它）
         }
     }
 

@@ -1,5 +1,9 @@
 package com.intellizon.biofeedbacktest.util
 
+import android.view.View
+import android.view.ViewGroup
+import android.widget.RadioGroup
+import com.intellizon.biofeedbacktest.R
 import com.intellizon.biofeedbacktest.vo.TherapyVO
 import com.intellizon.biofeedbacktest.domain.ChannelDetail
 import com.intellizon.biofeedbacktest.domain.ChannelName
@@ -45,4 +49,23 @@ object TherapyChannelApplier {
             }
         }
     }
+
+    fun ensureIndex(parent: RadioGroup, child: View, index: Int) {
+        if (child.parent != parent) return
+        val target = index.coerceIn(0, parent.childCount)
+        if (parent.indexOfChild(child) == target) return
+        parent.removeView(child)
+        parent.addView(child, target)
+    }
+
+    fun setMarginStartDp(v: View, dp: Int) {
+        val lp = v.layoutParams as? ViewGroup.MarginLayoutParams ?: return
+        val px = (dp * v.resources.displayMetrics.density + 0.5f).toInt()
+        if (lp.marginStart == px) return
+        lp.marginStart = px
+        v.layoutParams = lp
+    }
+
+
+
 }
