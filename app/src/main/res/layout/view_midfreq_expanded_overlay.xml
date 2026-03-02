@@ -56,15 +56,32 @@
                 android:orientation="vertical"
                 android:padding="12dp">
 
-                <TextView
-                    android:id="@+id/tvTitleA"
+            <!-- 标题 + 勾选框（同一行） -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvTitleA"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="通道A(中频)"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                <CheckBox
+                    android:id="@+id/cbSelectA"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="通道A(中频)"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
+                    android:checked="true"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
 
                 <!-- 干扰电刺激 UI -->
                 <include
@@ -106,15 +123,32 @@
                 android:id="@+id/expContentB"
                 android:padding="12dp">
 
+            <!-- 标题 + 勾选框（同一行） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+
                 <TextView
                     android:id="@+id/tvTitleB"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="通道B(中频)"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <CheckBox
+                    android:id="@+id/cbSelectB"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="通道B(中频)"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
 
                 <!-- 先复用同一套 low_frequency 布局跑通 delay -->
                 <!-- 干扰电刺激 UI -->
@@ -157,15 +191,32 @@
                 android:orientation="vertical"
                 android:padding="12dp">
 
+            <!-- 标题 + 勾选框（同一行） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
                 <TextView
                     android:id="@+id/tvTitleC"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="通道C(中频)"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <CheckBox
+                    android:id="@+id/cbSelectC"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="通道C(中频)"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
 
                 <!-- 干扰电刺激 UI -->
                 <include
@@ -207,15 +258,31 @@
                 android:id="@+id/expContentD"
                 android:padding="12dp">
 
+            <!-- 标题 + 勾选框（同一行） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
                 <TextView
                     android:id="@+id/tvTitleD"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="通道D(中频)"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <CheckBox
+                    android:id="@+id/cbSelectD"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="通道D(中频)"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
 
                 <!-- 干扰电刺激 UI -->
                 <include
