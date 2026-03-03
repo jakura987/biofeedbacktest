@@ -563,7 +563,7 @@
                         android:id="@+id/seek_delay"
                         android:layout_width="match_parent"
                         android:layout_height="24dp"
-                        android:max="40"
+                        android:max="200"
                         android:paddingStart="0dp"
                         android:paddingEnd="0dp"
                         android:progress="@={channelVo.delayProgress}"

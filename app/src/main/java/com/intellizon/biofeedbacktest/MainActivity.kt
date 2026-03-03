@@ -24,6 +24,8 @@ import com.intellizon.biofeedbacktest.domain.TherapyDetail
 import com.intellizon.biofeedbacktest.domain.TherapyMode
 import com.intellizon.biofeedbacktest.domain.TherapyParamMode
 import com.intellizon.biofeedbacktest.domain.Waveform
+import com.intellizon.biofeedbacktest.encode.LMFreqChannelCoderV1
+import com.intellizon.biofeedbacktest.encode.TherapyCoderV1
 import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initFrequencyMinUi
 import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initStepSeekbarUi
 import com.intellizon.biofeedbacktest.util.TherapyChannelApplier
@@ -31,6 +33,8 @@ import com.intellizon.biofeedbacktest.util.TherapyChannelApplier.ensureIndex
 import com.intellizon.biofeedbacktest.util.TherapyChannelApplier.setMarginStartDp
 import com.intellizon.biofeedbacktest.vo.ChannelVO
 import com.intellizon.biofeedbacktest.vo.TherapyVO
+import com.intellizon.biofeedbacktest.wifi.TherapyFrameBuilderV1
+import com.intellizon.biofeedbacktest.wifi.TherapySenderV1
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
@@ -177,7 +181,7 @@ class MainActivity : AppCompatActivity() {
 
             R.id.middleExpandedOverlay -> {
                 therapyVO.modifiedDto = therapyVO.modifiedDto.copy(mode = TherapyMode.MIDDLE)
-                val paramMode  = readMiddleParamModeFromCard()
+                val paramMode = readMiddleParamModeFromCard()
                 val waveform = readMiddleWaveformFromCard()
                 val modulationWaveform = readMiddleModulationWaveformFromCard()
                 TherapyChannelApplier.applyParamModeToAllChannels(therapyVO, TherapyMode.MIDDLE, paramMode)
@@ -210,7 +214,7 @@ class MainActivity : AppCompatActivity() {
                     mode = TherapyMode.BIOFEEDBACK,
                     wf = Waveform.BIPHASIC_SQUARE
                 )
-                val paramMode  = readBioParamModeFromCard()
+                val paramMode = readBioParamModeFromCard()
                 TherapyChannelApplier.applyParamModeToAllChannels(therapyVO, TherapyMode.BIOFEEDBACK, paramMode)
 
                 prepareVos(TherapyMode.BIOFEEDBACK)
@@ -257,7 +261,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun toggleMidUi(channelRoot: View, isInterference: Boolean, @IdRes interId: Int, @IdRes modId: Int, ) {
+    private fun toggleMidUi(channelRoot: View, isInterference: Boolean, @IdRes interId: Int, @IdRes modId: Int) {
         val incInterference = channelRoot.findViewById<View?>(interId)
         val incModulation = channelRoot.findViewById<View?>(modId)
 
@@ -307,33 +311,51 @@ class MainActivity : AppCompatActivity() {
             )
 
             // ✅ commit：把最新 dto 落到指定 mode
-            if (hasA) therapyVO.putChannel(mode, voA.dto)
-            if (hasB) therapyVO.putChannel(mode, voB.dto)
-            if (hasC) therapyVO.putChannel(mode, voC.dto)
-            if (hasD) therapyVO.putChannel(mode, voD.dto)
+            therapyVO.putChannel(mode, voA.dto)
+            therapyVO.putChannel(mode, voB.dto)
+            therapyVO.putChannel(mode, voC.dto)
+            therapyVO.putChannel(mode, voD.dto)
 
-            Timber.d(
-                """
-            ===== COMMIT mode=%d =====
-            therapyDetail=%s
-            A=%s
-            B=%s
-            C=%s
-            D=%s
-            """.trimIndent(),
-                mode,
-                therapyVO.modifiedDto,
-                voA.dto, voB.dto, voC.dto, voD.dto
+            Timber.d("D dto before encode: rise=%s fall=%s rest=%s sustain=%s fMin=%s fMax=%s",
+                voD.dto.riseTime, voD.dto.fallTime, voD.dto.restTime, voD.dto.sustainTime,
+                voD.dto.frequencyMin, voD.dto.frequencyMax
+            )
+
+            //转成协议hex
+            // 3) 组帧并打印 hex（按 SDU 校验）
+            val builder = TherapyFrameBuilderV1() // 你新建的那个 builder 类
+
+
+            val channelsByName = buildMap<Int, ChannelDetail> {
+                if (hasA) put(1, voA.dto)
+                if (hasB) put(2, voB.dto)
+                if (hasC) put(3, voC.dto)
+                if (hasD) put(4, voD.dto)
+            }
+
+            val frame = builder.buildTherapyFrame(
+                schemeNo = 0x01,
+                therapyDetail = therapyVO.modifiedDto,
+                channelsByName = channelsByName,
+                therapyCoder = TherapyCoderV1.INSTANCE
+            )
+
+            Timber.d("===== COMMIT mode 333 =%d =====\ntherapyDetail=%s\nHEX(len=%d): %s",
+                mode, therapyVO.modifiedDto, frame.size, frame.toHex()
             )
         }
     }
+
+    private fun ByteArray.toHex(): String =
+        joinToString(" ") { b -> "%02X".format(b.toInt() and 0xFF) }
+
 
     private fun bindChannelsForOverlayOnce(overlay: View) {
         if (overlay.getTag(TAG_BOUND) == true) return
         overlay.setTag(TAG_BOUND, true)
 
         fun initOne(root: View) {
-            initStepSeekbarUi(root, R.id.seek_delay, R.id.iv_minus_delay, R.id.iv_add_delay, 40, 0.5)
+            initStepSeekbarUi(root, R.id.seek_delay, R.id.iv_minus_delay, R.id.iv_add_delay, 200, 0.1)
             initStepSeekbarUi(root, R.id.seek_rise, R.id.iv_minus_rise, R.id.iv_add_rise, 40, 0.5)
             initStepSeekbarUi(root, R.id.seek_fall, R.id.iv_minus_fall, R.id.iv_add_fall, 40, 0.5)
             initStepSeekbarUi(root, R.id.seek_rest, R.id.iv_minus_rest, R.id.iv_add_rest, 40, 0.5)
@@ -417,7 +439,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     //读取中频刺激类型
     @TherapyParamMode
     private fun readMiddleParamModeFromCard(): Int {
@@ -433,7 +454,7 @@ class MainActivity : AppCompatActivity() {
 
     //读取中频载波波形
     @Waveform
-    private fun readMiddleWaveformFromCard():  Int {
+    private fun readMiddleWaveformFromCard(): Int {
         val cardMid = findViewById<View>(R.id.midFrequency)
         val rgCarrier = cardMid.findViewById<RadioGroup?>(R.id.rg_mid_waveform)
 

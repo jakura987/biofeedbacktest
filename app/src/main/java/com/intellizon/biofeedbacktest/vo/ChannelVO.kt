@@ -17,11 +17,11 @@ class ChannelVO(
     var delayProgress: Int
         get() {
             val sec = dto.delayTime ?: 0.0
-            return kotlin.math.round(sec / 0.5).toInt().coerceIn(0, 40)
+            return kotlin.math.round(sec / 0.1).toInt().coerceIn(0, 200)
         }
         set(value) {
-            val p = value.coerceIn(0, 40)
-            dto = dto.copy(delayTime = p * 0.5)
+            val p = value.coerceIn(0, 200)
+            dto = dto.copy(delayTime = p * 0.1)
         }
 
     var riseProgress: Int
@@ -84,6 +84,7 @@ class ChannelVO(
             dto = dto.copy(totalTime = p * 1)
         }
 
+    //脉冲频率
     var frequencyMinProgress: Int
         get() {
             val f = (dto.frequencyMin ?: 0.1).coerceIn(0.1, 1000.0)
@@ -106,7 +107,7 @@ class ChannelVO(
                 // 9..1008 -> 1..1000
                 (p - 8).toDouble()
             }
-            dto = dto.copy(frequencyMin = f)
+            dto = dto.copy(frequencyMin = f, frequencyMax = f)
         }
 
 
