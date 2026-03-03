@@ -31,6 +31,25 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
+        <!-- 新增：Wi-Fi 信息行 -->
+        <TextView
+            android:id="@+id/tvWifiInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:text="AP IP: -"
+            android:textSize="13sp"
+            android:maxLines="6"
+            android:ellipsize="none" />
+
+        <!-- 新增：已连接热点的设备列表 -->
+        <RadioGroup
+            android:id="@+id/rgClients"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="8dp" />
+
         <!-- 左侧内容容器（预留） -->
         <FrameLayout
             android:id="@+id/leftContent"

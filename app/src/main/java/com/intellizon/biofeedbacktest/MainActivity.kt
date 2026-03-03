@@ -1,5 +1,6 @@
 package com.intellizon.biofeedbacktest
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.view.GestureDetector
@@ -15,6 +16,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.intellizon.biofeedbacktest.databinding.ActivityMainBinding
 import com.intellizon.biofeedbacktest.databinding.ViewBiofreqExpandedOverlayBinding
 import com.intellizon.biofeedbacktest.databinding.ViewLowfreqExpandedOverlayBinding
 import com.intellizon.biofeedbacktest.databinding.ViewMidfreqExpandedOverlayBinding
@@ -22,29 +24,40 @@ import com.intellizon.biofeedbacktest.domain.ChannelDetail
 import com.intellizon.biofeedbacktest.domain.ChannelName
 import com.intellizon.biofeedbacktest.domain.SubModeInMiddle
 import com.intellizon.biofeedbacktest.domain.SubModeInOther
+import com.intellizon.biofeedbacktest.domain.TcpPacket
 import com.intellizon.biofeedbacktest.domain.TherapyDetail
 import com.intellizon.biofeedbacktest.domain.TherapyMode
 import com.intellizon.biofeedbacktest.domain.TherapyParamMode
 import com.intellizon.biofeedbacktest.domain.Waveform
-import com.intellizon.biofeedbacktest.encode.LMFreqChannelCoderV1
 import com.intellizon.biofeedbacktest.encode.TherapyCoderV1
 import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initFrequencyMinUi
 import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initStepSeekbarUi
 import com.intellizon.biofeedbacktest.util.TherapyChannelApplier
-import com.intellizon.biofeedbacktest.util.TherapyChannelApplier.ensureIndex
-import com.intellizon.biofeedbacktest.util.TherapyChannelApplier.setMarginStartDp
 import com.intellizon.biofeedbacktest.vo.ChannelVO
 import com.intellizon.biofeedbacktest.vo.TherapyVO
 import com.intellizon.biofeedbacktest.wifi.TherapyFrameBuilderV1
-import com.intellizon.biofeedbacktest.wifi.TherapySenderV1
+import com.intellizon.biofeedbacktest.wifi.connect.LocalIpHelper
+import com.intellizon.biofeedbacktest.wifi.manager.WifiTcpServerManager
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import timber.log.Timber
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private var activeOverlay: View? = null
+
+    private lateinit var binding: ActivityMainBinding
+
+    @Inject lateinit var wifiTcpServerManager: WifiTcpServerManager
+
+    private val tcpPort = 8887
+
+    private val disposables = CompositeDisposable()
+
 
     private lateinit var voA: ChannelVO
     private lateinit var voB: ChannelVO
@@ -60,7 +73,7 @@ class MainActivity : AppCompatActivity() {
     private val therapyVO = TherapyVO(
         therapyId = 0L,
         modifiedDto = TherapyDetail(
-            name = "temp",
+            name = "swets",
             mode = TherapyMode.LOW_FREQUENCY,
             subMode = 0,
             tremorFrequency = 0,
@@ -74,13 +87,43 @@ class MainActivity : AppCompatActivity() {
         ),
     )
 
+    @SuppressLint("AutoDispose")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        // 启动 TCP server
+        disposables.add(
+            wifiTcpServerManager.startIfNeeded(tcpPort)
+                .subscribe(
+                    { /* ignore */ },
+                    { Timber.e(it, "start tcp failed") }
+                )
+        )
+
+
+        disposables.add(
+            wifiTcpServerManager.incoming()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { p ->
+                        Timber.i("TCP <- peer=%s len=%d", p.peer, p.byteString.size)
+                        onTcpPacket(p)
+                        // 这里就能解析 ID，并绑定到 peer
+                        // handlePacket(p.peer, p.bytes)
+                    },
+                    { Timber.e(it, "incoming error") }
+                )
+        )
+
+
 
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         Timber.d("version name: ${BuildConfig.VERSION_NAME}")
+
+        updateWifiPanel()
 
 
         // 双击 lowFrequency 进入 overlay
@@ -283,6 +326,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.panelRight).visibility = View.VISIBLE
     }
 
+    @SuppressLint("AutoDispose")
     private fun bindCenterInfoButtonOnce(overlay: View, @TherapyMode mode: Int) {
         // ✅ 让不同 overlay / 不同 mode 都能各自绑定一次（避免 tag 冲突）
         val tagKey = TAG_CENTER_BOUND xor mode
@@ -293,6 +337,18 @@ class MainActivity : AppCompatActivity() {
         btn.text = "commit"
 
         btn.setOnClickListener {
+
+            // ✅ 0) 先判断有没有 TCP 客户端
+            if (wifiTcpServerManager.connectedCount() <= 0) {
+                Toast.makeText(overlay.context, "没有TCP客户端连接", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val peer = selectedPeer
+            if (peer.isNullOrBlank()) {
+                Toast.makeText(overlay.context, "请选择一个设备", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
 
             // 1) 读勾选状态（注意：必须从 overlay 找，因为每个 overlay 里都有一套）
             val hasA = overlay.findViewById<CheckBox>(R.id.cbSelectA)?.isChecked == true
@@ -347,6 +403,32 @@ class MainActivity : AppCompatActivity() {
             Timber.d("===== COMMIT mode 333 =%d =====\ntherapyDetail=%s\nHEX(len=%d): %s",
                 mode, therapyVO.modifiedDto, frame.size, frame.toHex()
             )
+
+            //发送至选中设备
+            disposables.add(
+                wifiTcpServerManager.sendToPeer(peer, frame)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { ok -> Toast.makeText(overlay.context, if (ok) "已发送到 $peer" else "发送失败", Toast.LENGTH_SHORT).show() },
+                        { e -> Timber.e(e, "sendToPeer failed") }
+                    )
+            )
+
+            // 发送全部
+//            disposables.add(
+//                wifiTcpServerManager.send(frame)
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(
+//                        { ok ->
+//                            Timber.i("TCP -> sent ok=%s len=%d", ok, frame.size)
+//                            Toast.makeText(overlay.context, if (ok) "已发送" else "发送失败：无连接", Toast.LENGTH_SHORT).show()
+//                        },
+//                        { e ->
+//                            Timber.e(e, "TCP send failed")
+//                            Toast.makeText(overlay.context, "发送异常: ${e.message}", Toast.LENGTH_SHORT).show()
+//                        }
+//                    )
+//            )
         }
     }
 
@@ -537,4 +619,106 @@ class MainActivity : AppCompatActivity() {
         private const val TAG_CENTER_BOUND: Int = 0xCC010006.toInt()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        disposables.clear()
+    }
+
+
+
+
+
+    //wifi相关
+    private var selectedPeer: String? = null
+    private val uiHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val uiTicker = object : Runnable {
+        override fun run() {
+            updateTcpClientsUi()
+            uiHandler.postDelayed(this, 1000L)
+        }
+    }
+
+    private fun updateWifiPanel() {
+        binding.tvWifiInfo.text =
+            "Wi-Fi信息(本机私网IP):\n${LocalIpHelper.listPrivateIPv4()}"
+    }
+
+    private val deviceIdByPeer = mutableMapOf<String, String>()
+
+    private fun onTcpPacket(p: TcpPacket) {
+        val text = p.byteString.toString(Charsets.UTF_8).trim()
+
+        // 例：ID=DeviceA
+        if (text.startsWith("ID=")) {
+            val id = text.removePrefix("ID=").trim()
+            val ip = p.peer.substringBefore(':')
+            val port = p.peer.substringAfter(':').toIntOrNull()
+
+            deviceIdByPeer[p.peer] = id
+            Timber.i("Device ID bound: id=%s peer=%s ip=%s port=%s", id, p.peer, ip, port)
+
+            // 立刻刷新一下 UI（可选）
+            updateTcpClientsUi()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        uiHandler.post(uiTicker)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        uiHandler.removeCallbacks(uiTicker)
+    }
+
+    private fun updateTcpClientsUi() {
+        val peers = wifiTcpServerManager.connectedPeers()
+
+        val rg = binding.rgClients
+        rg.removeAllViews()
+
+        if (peers.isEmpty()) {
+            // 没设备时显示一行灰提示也行：这里简单点用一个不可选的 RadioButton
+            val rb = RadioButton(this).apply {
+                text = "TCP已连接：0"
+                isEnabled = false
+            }
+            rg.addView(rb)
+            selectedPeer = null
+            return
+        }
+
+        // 如果之前选中的设备已经断开，就清空选择
+        if (selectedPeer != null && selectedPeer !in peers) {
+            selectedPeer = null
+        }
+
+        peers.forEach { peer ->
+            val id = deviceIdByPeer[peer] // 你已有的映射：peer -> 设备名/ID
+            val label = if (id.isNullOrBlank()) peer else "$id  ($peer)"
+
+            val rb = RadioButton(this).apply {
+                text = label
+                tag = peer // ✅ 用 tag 存真实 peer
+                isChecked = (peer == selectedPeer)
+                setOnCheckedChangeListener { buttonView, isChecked ->
+                    if (isChecked) {
+                        selectedPeer = buttonView.tag as String
+                    }
+                }
+            }
+            rg.addView(rb)
+        }
+
+        // 如果还没选中过任何设备，默认选第一个（可选）
+        if (selectedPeer == null && peers.isNotEmpty()) {
+            selectedPeer = peers.first()
+            // 触发勾选状态刷新
+            (0 until rg.childCount).forEach { i ->
+                val v = rg.getChildAt(i)
+                if (v is RadioButton) v.isChecked = (v.tag == selectedPeer)
+            }
+        }
+    }
 }
