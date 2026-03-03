@@ -26,7 +26,7 @@ class WifiTcpServerManager @Inject constructor() {
     fun incoming(): Flowable<TcpPacket> = _incoming.onBackpressureBuffer()
 
     @Synchronized
-    fun startIfNeeded(port: Int = 8887): Completable =
+    fun startIfNeeded(port: Int = 8883): Completable =
         Completable.fromAction {
             if (server?.isRunning == true) return@fromAction
 

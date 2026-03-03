@@ -31,16 +31,35 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <!-- 新增：Wi-Fi 信息行 -->
-        <TextView
-            android:id="@+id/tvWifiInfo"
+        <!-- Wi-Fi 信息行 + 右侧状态图 -->
+        <LinearLayout
+            android:id="@+id/rowWifiInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="8dp"
-            android:text="AP IP: -"
-            android:textSize="13sp"
-            android:maxLines="6"
-            android:ellipsize="none" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvWifiInfo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="AP IP: -"
+                android:textSize="13sp"
+                android:maxLines="6"
+                android:ellipsize="none" />
+
+            <ImageView
+                android:id="@+id/ivConnStatus"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_marginStart="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/cry_"
+                android:contentDescription="@null" />
+
+        </LinearLayout>
 
         <!-- 新增：已连接热点的设备列表 -->
         <RadioGroup
@@ -49,15 +68,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingBottom="8dp" />
-
-        <!-- 新增：连接状态图片 -->
-        <ImageView
-            android:id="@+id/ivConnStatus"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/cry_"
-            android:contentDescription="@string/conn_status" />
 
         <!-- 左侧内容容器（预留） -->
         <FrameLayout

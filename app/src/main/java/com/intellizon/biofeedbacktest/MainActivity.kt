@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
 
     @Inject lateinit var wifiTcpServerManager: WifiTcpServerManager
 
-    private val tcpPort = 8887
+    private val tcpPort = 8883
 
     private val disposables = CompositeDisposable()
 
@@ -619,9 +619,20 @@ class MainActivity : AppCompatActivity() {
         private const val TAG_CENTER_BOUND: Int = 0xCC010006.toInt()
     }
 
+    @SuppressLint("AutoDispose")
     override fun onDestroy() {
-        super.onDestroy()
+        // ✅ 先停 server（释放端口）
+        disposables.add(
+            wifiTcpServerManager.stop()
+                .subscribe(
+                    { Timber.i("tcp stopped onDestroy") },
+                    { Timber.w(it, "tcp stop onDestroy fail") }
+                )
+        )
+
+        // ✅ 再清理所有订阅
         disposables.clear()
+        super.onDestroy()
     }
 
 
