@@ -50,6 +50,15 @@
             android:orientation="vertical"
             android:paddingBottom="8dp" />
 
+        <!-- 新增：连接状态图片 -->
+        <ImageView
+            android:id="@+id/ivConnStatus"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cry_"
+            android:contentDescription="@string/conn_status" />
+
         <!-- 左侧内容容器（预留） -->
         <FrameLayout
             android:id="@+id/leftContent"

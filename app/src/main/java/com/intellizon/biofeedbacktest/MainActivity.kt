@@ -675,8 +675,15 @@ class MainActivity : AppCompatActivity() {
     private fun updateTcpClientsUi() {
         val peers = wifiTcpServerManager.connectedPeers()
 
+        Timber.i("updateTcpClientsUi: peersCount=%d peers=%s",
+            peers.size,
+            peers.joinToString()
+        )
+
         val rg = binding.rgClients
         rg.removeAllViews()
+
+        updateConnStatusImage(peers.size)
 
         if (peers.isEmpty()) {
             // 没设备时显示一行灰提示也行：这里简单点用一个不可选的 RadioButton
@@ -720,5 +727,17 @@ class MainActivity : AppCompatActivity() {
                 if (v is RadioButton) v.isChecked = (v.tag == selectedPeer)
             }
         }
+
+
+    }
+
+    private fun updateConnStatusImage(count: Int) {
+        val hasClient = count > 0
+        Timber.i("clientCount=%d", count)
+
+        binding.ivConnStatus.setImageResource(
+            if (hasClient) R.drawable.laugh_ else R.drawable.cry_
+        )
+        binding.ivConnStatus.contentDescription = if (hasClient) "已连接" else "未连接"
     }
 }
