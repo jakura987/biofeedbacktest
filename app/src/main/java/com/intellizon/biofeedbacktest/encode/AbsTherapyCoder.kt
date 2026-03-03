@@ -8,7 +8,6 @@ import com.intellizon.biofeedbacktest.domain.TherapyParamMode
 
 /**
  * Classname: AbsTherapyCoder
- * Created by Lenovo on 2024/10/22.
  */
 abstract class AbsTherapyCoder {
     /**

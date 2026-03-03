@@ -20,6 +20,8 @@ import com.intellizon.biofeedbacktest.databinding.ViewLowfreqExpandedOverlayBind
 import com.intellizon.biofeedbacktest.databinding.ViewMidfreqExpandedOverlayBinding
 import com.intellizon.biofeedbacktest.domain.ChannelDetail
 import com.intellizon.biofeedbacktest.domain.ChannelName
+import com.intellizon.biofeedbacktest.domain.SubModeInMiddle
+import com.intellizon.biofeedbacktest.domain.SubModeInOther
 import com.intellizon.biofeedbacktest.domain.TherapyDetail
 import com.intellizon.biofeedbacktest.domain.TherapyMode
 import com.intellizon.biofeedbacktest.domain.TherapyParamMode
@@ -181,10 +183,10 @@ class MainActivity : AppCompatActivity() {
 
             R.id.middleExpandedOverlay -> {
                 therapyVO.modifiedDto = therapyVO.modifiedDto.copy(mode = TherapyMode.MIDDLE)
-                val paramMode = readMiddleParamModeFromCard()
+                val subMode = readMiddleSubModeFromCard()
                 val waveform = readMiddleWaveformFromCard()
                 val modulationWaveform = readMiddleModulationWaveformFromCard()
-                TherapyChannelApplier.applyParamModeToAllChannels(therapyVO, TherapyMode.MIDDLE, paramMode)
+                TherapyChannelApplier.applyMiddleSubModeToAllChannels(therapyVO, TherapyMode.MIDDLE, subMode)
                 TherapyChannelApplier.applyWaveformToAllChannels(therapyVO, TherapyMode.MIDDLE, waveform)
                 TherapyChannelApplier.applyModulationWaveformToAllChannels(therapyVO, TherapyMode.MIDDLE, modulationWaveform)
 
@@ -198,7 +200,7 @@ class MainActivity : AppCompatActivity() {
                 binding?.lifecycleOwner = this
 
                 //中频双击不同布局
-                val isInterference = (paramMode == TherapyParamMode.MIDDLE_INTERFERENCE)
+                val isInterference = (subMode == SubModeInMiddle.INTERFERENCE)
                 applyMiddleStimTypeUi(overlay, isInterference)
 
                 bindChannelsForOverlayOnce(overlay)
@@ -214,8 +216,8 @@ class MainActivity : AppCompatActivity() {
                     mode = TherapyMode.BIOFEEDBACK,
                     wf = Waveform.BIPHASIC_SQUARE
                 )
-                val paramMode = readBioParamModeFromCard()
-                TherapyChannelApplier.applyParamModeToAllChannels(therapyVO, TherapyMode.BIOFEEDBACK, paramMode)
+                val subMode = readBioParamModeFromCard()
+                TherapyChannelApplier.applyBioSubModeToAllChannels(therapyVO, TherapyMode.BIOFEEDBACK, subMode)
 
                 prepareVos(TherapyMode.BIOFEEDBACK)
 
@@ -316,14 +318,16 @@ class MainActivity : AppCompatActivity() {
             therapyVO.putChannel(mode, voC.dto)
             therapyVO.putChannel(mode, voD.dto)
 
-            Timber.d("D dto before encode: rise=%s fall=%s rest=%s sustain=%s fMin=%s fMax=%s",
-                voD.dto.riseTime, voD.dto.fallTime, voD.dto.restTime, voD.dto.sustainTime,
-                voD.dto.frequencyMin, voD.dto.frequencyMax
+            Timber.d("ABCD dto before encode: restA=%s, restB=%s, restC=%s, restD=%s",
+                voA.dto.restTime,
+                voB.dto.restTime,
+                voC.dto.restTime,
+                voD.dto.restTime,
             )
 
             //转成协议hex
             // 3) 组帧并打印 hex（按 SDU 校验）
-            val builder = TherapyFrameBuilderV1() // 你新建的那个 builder 类
+            val builder = TherapyFrameBuilderV1()
 
 
             val channelsByName = buildMap<Int, ChannelDetail> {
@@ -378,8 +382,19 @@ class MainActivity : AppCompatActivity() {
             // 差频频率 max 0..200
             initStepSeekbarUi(root, R.id.seek_frequencyMax, R.id.iv_minus_frequencyMax, R.id.iv_add_frequencyMax, 200, 1.0, decimals = 0)
 
+
+            // 收缩
+            initStepSeekbarUi(root, R.id.seek_contraction, R.id.iv_minus_contraction, R.id.iv_add_contraction, 20, 1.0, decimals = 0)
+
+
+            // 刺激
+            initStepSeekbarUi(root, R.id.seek_stimulation, R.id.iv_minus_stimulation, R.id.iv_add_stimulation, 20, 1.0, decimals = 0)
+
+
             // 差频频率 min（你的特殊规则）
             initFrequencyMinUi(root, R.id.seek_freq, R.id.iv_minus_freq, R.id.iv_add_freq)
+
+
         }
 
         /**
@@ -441,14 +456,14 @@ class MainActivity : AppCompatActivity() {
 
     //读取中频刺激类型
     @TherapyParamMode
-    private fun readMiddleParamModeFromCard(): Int {
+    @SubModeInMiddle
+    private fun readMiddleSubModeFromCard(): Int {
         val cardMid = findViewById<View>(R.id.midFrequency)
         val rbInterference = cardMid.findViewById<RadioButton>(R.id.rb_stim_mid_interference)
-        // 默认干扰电
         return if (rbInterference.isChecked) {
-            TherapyParamMode.MIDDLE_INTERFERENCE   // 0x41
+            SubModeInMiddle.INTERFERENCE // 0x11
         } else {
-            TherapyParamMode.MIDDLE_MODULATED      // 0x43
+            SubModeInMiddle.MODULATED    // 0x12
         }
     }
 
@@ -480,15 +495,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     //读取生物反馈刺激类型
-    @TherapyParamMode
+    @SubModeInOther
     private fun readBioParamModeFromCard(): Int {
         val cardMid = findViewById<View>(R.id.bioFrequency)
         val rbEts = cardMid.findViewById<RadioButton>(R.id.rb_stim_bio_ets)
         // 默认干扰电
         return if (rbEts.isChecked) {
-            TherapyParamMode.BIOFEEDBACK_ETS  // 0x51
+            SubModeInOther.ETS  // 0x03
         } else {
-            TherapyParamMode.BIOFEEDBACK_CCFES  // 0x52
+            SubModeInOther.CCFES  // 0x04
         }
     }
 

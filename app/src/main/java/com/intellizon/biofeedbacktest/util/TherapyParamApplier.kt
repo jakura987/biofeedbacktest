@@ -9,23 +9,44 @@ import com.intellizon.biofeedbacktest.domain.ChannelDetail
 import com.intellizon.biofeedbacktest.domain.ChannelName
 import com.intellizon.biofeedbacktest.domain.FrequencyType.Companion.CONSTANT_FREQUENCY
 import com.intellizon.biofeedbacktest.domain.FrequencyType.Companion.VARIABLE_FREQUENCY
+import com.intellizon.biofeedbacktest.domain.SubMode
+import com.intellizon.biofeedbacktest.domain.SubModeInMiddle
+import com.intellizon.biofeedbacktest.domain.SubModeInOther
 import com.intellizon.biofeedbacktest.domain.TherapyMode
 import com.intellizon.biofeedbacktest.domain.TherapyParamMode
 import com.intellizon.biofeedbacktest.domain.Waveform
 
 object TherapyChannelApplier {
 
-    fun applyParamModeToAllChannels(therapyVO: TherapyVO, @TherapyMode mode: Int, @TherapyParamMode paramMode: Int) {
-        therapyVO.modifiedDto = therapyVO.modifiedDto.copy(subMode = paramMode)
+    fun applyMiddleSubModeToAllChannels(
+        therapyVO: TherapyVO,
+        @TherapyMode mode: Int,
+        @SubModeInMiddle subMode: Int
+    ) {
+        // 只存 legacy subMode（0x11/0x12）
+        therapyVO.modifiedDto = therapyVO.modifiedDto.copy(subMode = subMode)
 
         for (ch in arrayOf(ChannelName.CHANNEL_A, ChannelName.CHANNEL_B, ChannelName.CHANNEL_C, ChannelName.CHANNEL_D)) {
             val old = therapyVO.getOrCreateChannel(mode, ch)
-            if(paramMode == TherapyParamMode.MIDDLE_INTERFERENCE){
-                therapyVO.putChannel(mode, old.copy(subMode = paramMode, frequencyType = VARIABLE_FREQUENCY))
-            }else{
-                therapyVO.putChannel(mode, old.copy(subMode = paramMode, frequencyType = CONSTANT_FREQUENCY))
-            }
 
+            val freqType =
+                if (subMode == SubModeInMiddle.INTERFERENCE) VARIABLE_FREQUENCY else CONSTANT_FREQUENCY
+
+            therapyVO.putChannel(mode, old.copy(subMode = subMode, frequencyType = freqType))
+        }
+    }
+
+
+    fun applyBioSubModeToAllChannels(
+        therapyVO: TherapyVO,
+        @TherapyMode mode: Int,
+        @SubModeInOther subMode: Int
+    ) {
+        therapyVO.modifiedDto = therapyVO.modifiedDto.copy(subMode = subMode)
+
+        for (ch in arrayOf(ChannelName.CHANNEL_A, ChannelName.CHANNEL_B, ChannelName.CHANNEL_C, ChannelName.CHANNEL_D)) {
+            val old = therapyVO.getOrCreateChannel(mode, ch)
+            therapyVO.putChannel(mode, old.copy(subMode = subMode))
         }
     }
 
@@ -43,20 +64,6 @@ object TherapyChannelApplier {
         }
     }
 
-    /** 可选：中频一键默认（干扰/调制） */
-    fun applyMiddleDefaults(therapyVO: TherapyVO, @TherapyParamMode paramMode: Int) {
-        applyParamModeToAllChannels(therapyVO, TherapyMode.MIDDLE, paramMode)
-        when (paramMode) {
-            TherapyParamMode.MIDDLE_INTERFERENCE -> {
-                applyWaveformToAllChannels(therapyVO, TherapyMode.MIDDLE, Waveform.SINE)
-                applyModulationWaveformToAllChannels(therapyVO, TherapyMode.MIDDLE, Waveform.TRIANGLE)
-            }
-            TherapyParamMode.MIDDLE_MODULATED -> {
-                applyWaveformToAllChannels(therapyVO, TherapyMode.MIDDLE, Waveform.BIPHASIC_SQUARE)
-                applyModulationWaveformToAllChannels(therapyVO, TherapyMode.MIDDLE, Waveform.SINE)
-            }
-        }
-    }
 
     fun ensureIndex(parent: RadioGroup, child: View, index: Int) {
         if (child.parent != parent) return
