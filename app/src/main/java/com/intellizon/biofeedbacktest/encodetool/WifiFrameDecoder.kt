@@ -1,5 +1,6 @@
 package com.intellizon.biofeedbacktest.encodetool
 
+import com.intellizon.biofeedbacktest.domain.Waveform
 import java.lang.StringBuilder
 
 object WifiFrameDecoder {
@@ -129,10 +130,13 @@ object WifiFrameDecoder {
         while (off + 34 <= rest.size) {
             val blk = rest.copyOfRange(off, off + 34)
             val info = decodeChannelBlock34(blk)
+            val wf = info.waveform
+            val modulationWf = info.modulationWaveform
+
 
             sb.appendLine("  channelBlock[$idx] channel=${info.channel}")
             sb.appendLine("  [0] flag0 (通道标识)                    : 0x${info.flag0.toHex2()} (raw=${blk.sliceHex(0,0)})")
-            sb.appendLine("  [1] waveform (刺激/载波波形)            : ${info.waveform} (raw=${blk.sliceHex(1,1)})")
+            sb.appendLine("  [1] waveform (刺激/载波波形)             : ${Waveform.from(wf)} (raw=${blk.sliceHex(1,1)} )")
             sb.appendLine("  [2,3] intensity (电流强度)              : ${info.intensity} (raw=${blk.sliceHex(2,3)})")
             sb.appendLine("  [4,5,6] width_us (脉冲宽度)             : ${info.widthUs} (raw=${blk.sliceHex(4,6)})")
             sb.appendLine("  [7] delay_s (延时时间)                  : ${info.delayS} (raw/10) (raw=${blk.sliceHex(7,7)})")
@@ -146,10 +150,10 @@ object WifiFrameDecoder {
             sb.appendLine("  [19] rest_s (休息时间)                  : ${info.restS} (raw/2) (raw=${blk.sliceHex(19,19)})")
             sb.appendLine("  [21] total_min (治疗时间min)            : ${info.totalMin} (raw=${blk.sliceHex(21,21)})")
 
-            sb.appendLine("  [22] modulationWaveform (调制波形)      : ${info.modulationWaveform} (raw=${blk.sliceHex(22,22)})")
+            sb.appendLine("  [22] modulationWaveform (调制波形)      : ${Waveform.from(modulationWf)} (raw=${blk.sliceHex(22,22)})")
             sb.appendLine("  [23] depth_percent (调幅深度%)          : ${info.depthPercent} (raw=${blk.sliceHex(23,23)})")
             sb.appendLine("  [24] modFreq_hz (调制频率Hz)            : ${info.modFreqHz} (raw=${blk.sliceHex(24,24)})")
-            sb.appendLine("  [25] carrier_khz (载波kHz)              : ${info.carrierKhz} (raw/2) (raw=${blk.sliceHex(25,25)})")
+            sb.appendLine("  [25] carrier_khz (工作频率kHz)              : ${info.carrierKhz} (raw/2) (raw=${blk.sliceHex(25,25)})")
             sb.appendLine("  [26,27] diffA_hz (差频A)                : ${info.diffAHz} (raw=${blk.sliceHex(26,27)})")
             sb.appendLine("  [28,29] diffB_hz (差频B)                : ${info.diffBHz} (raw=${blk.sliceHex(28,29)})")
             sb.appendLine("  [30] diffPeriod_s (差频周期s)           : ${info.diffPeriodS} (raw=${blk.sliceHex(30,30)})")

@@ -287,7 +287,7 @@ class MainActivity : AppCompatActivity() {
                 binding?.lifecycleOwner = this
 
                 bindChannelsForOverlayOnce(overlay)
-                bindCenterInfoButtonOnce(overlay, TherapyMode.LOW_FREQUENCY)
+                bindCenterInfoButtonOnce(overlay, TherapyMode.BIOFEEDBACK)
                 bindDoubleTapCloseToTitlesOnce(overlay)
             }
         }

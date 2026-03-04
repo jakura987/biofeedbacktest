@@ -128,7 +128,7 @@ annotation class Waveform {
         fun from(value: Int): String =
             when (value) {
                 BIPHASIC_SQUARE -> "双相方波"
-                UNIPHASIC_SQUARE -> "单相方波"
+                UNIPHASIC_SQUARE -> "EMPTY" //todo 单相方波
                 TRIANGLE -> "三角波"
                 SINE -> "正弦波"
                 TENS -> "不对称双相波"
