@@ -305,19 +305,17 @@
         </androidx.cardview.widget.CardView>
 
         <!-- 中间圆形按钮 -->
-        <TextView
+        <ImageButton
             android:id="@+id/btnCenterInfo"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:gravity="center"
-            android:text="--"
-            android:textStyle="bold"
-            android:textSize="10sp"
-            android:textColor="@android:color/white"
-            android:background="@drawable/bg_circle_center_btn"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:src="@drawable/black_cry_head"
+            android:background="@android:color/transparent"
+            android:scaleType="fitCenter"
             android:clickable="true"
             android:focusable="true"
             android:elevation="12dp"
+            android:contentDescription="@null"
             app:layout_constraintStart_toStartOf="@id/vGuide"
             app:layout_constraintEnd_toEndOf="@id/vGuide"
             app:layout_constraintTop_toTopOf="@id/hGuide"

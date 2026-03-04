@@ -1,12 +1,16 @@
 package com.intellizon.biofeedbacktest
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.view.GestureDetector
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.widget.CheckBox
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -30,6 +34,7 @@ import com.intellizon.biofeedbacktest.domain.TherapyMode
 import com.intellizon.biofeedbacktest.domain.TherapyParamMode
 import com.intellizon.biofeedbacktest.domain.Waveform
 import com.intellizon.biofeedbacktest.encode.TherapyCoderV1
+import com.intellizon.biofeedbacktest.module.EncodeDialog
 import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initFrequencyMinUi
 import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initStepSeekbarUi
 import com.intellizon.biofeedbacktest.util.TherapyChannelApplier
@@ -52,9 +57,16 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    @Inject lateinit var wifiTcpServerManager: WifiTcpServerManager
+    @Inject
+    lateinit var wifiTcpServerManager: WifiTcpServerManager
 
     private val tcpPort = 8883
+
+    private var latestCommitHex: String = ""
+    private var latestCommitMeta: String = ""
+
+    //emoji
+    private var showShockWhenConnected: Boolean = false
 
     private val disposables = CompositeDisposable()
 
@@ -188,6 +200,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<View>(R.id.panelRight).visibility = View.VISIBLE
+
+        //encode 界面
+        bindConnStatusDoubleTap(binding.ivConnStatus)
     }
 
     private fun showOverlay(overlayId: Int) {
@@ -333,8 +348,8 @@ class MainActivity : AppCompatActivity() {
         if (overlay.getTag(tagKey) == true) return
         overlay.setTag(tagKey, true)
 
-        val btn = overlay.findViewById<TextView>(R.id.btnCenterInfo)
-        btn.text = "commit"
+        val btn = overlay.findViewById<ImageButton>(R.id.btnCenterInfo)
+        //btn.text = " "
 
         btn.setOnClickListener {
 
@@ -374,7 +389,8 @@ class MainActivity : AppCompatActivity() {
             therapyVO.putChannel(mode, voC.dto)
             therapyVO.putChannel(mode, voD.dto)
 
-            Timber.d("ABCD dto before encode: restA=%s, restB=%s, restC=%s, restD=%s",
+            Timber.d(
+                "ABCD dto before encode: restA=%s, restB=%s, restC=%s, restD=%s",
                 voA.dto.restTime,
                 voB.dto.restTime,
                 voC.dto.restTime,
@@ -399,6 +415,8 @@ class MainActivity : AppCompatActivity() {
                 channelsByName = channelsByName,
                 therapyCoder = TherapyCoderV1.INSTANCE
             )
+            latestCommitHex = frame.toHex()
+            latestCommitMeta = "mode=$mode peer=$peer len=${frame.size}"
 
             Timber.d("===== COMMIT mode 333 =%d =====\ntherapyDetail=%s\nHEX(len=%d): %s",
                 mode, therapyVO.modifiedDto, frame.size, frame.toHex()
@@ -409,8 +427,13 @@ class MainActivity : AppCompatActivity() {
                 wifiTcpServerManager.sendToPeer(peer, frame)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                        { ok -> Toast.makeText(overlay.context, if (ok) "已发送到 $peer" else "发送失败", Toast.LENGTH_SHORT).show() },
-                        { e -> Timber.e(e, "sendToPeer failed") }
+                        { ok ->
+                            val text = if (ok) "已发送到 $peer" else "发送失败"
+                            showSendToast(overlay.context, text, ok)
+                        },
+                        { e ->
+                            showSendToast(overlay.context, "发送异常：${e.message ?: "unknown"}", false)
+                        }
                     )
             )
 
@@ -636,9 +659,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-
-
     //wifi相关
     private var selectedPeer: String? = null
     private val uiHandler = android.os.Handler(android.os.Looper.getMainLooper())
@@ -743,12 +763,84 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateConnStatusImage(count: Int) {
+//        lastPeerCount = count
+
         val hasClient = count > 0
-        Timber.i("clientCount=%d", count)
+        Timber.i("clientCount=%d shock=%s", count, showShockWhenConnected)
 
         binding.ivConnStatus.setImageResource(
-            if (hasClient) R.drawable.laugh_ else R.drawable.cry_
+            when {
+                !hasClient -> R.drawable.cry_                         // ❌没连接：永远哭
+                showShockWhenConnected -> R.drawable.shock_           // ✅已连接且弹窗打开：shock
+                else -> R.drawable.laugh_                             // ✅已连接平时：laugh
+            }
         )
-        binding.ivConnStatus.contentDescription = if (hasClient) "已连接" else "未连接"
+
+        binding.ivConnStatus.contentDescription = when {
+            !hasClient -> "未连接"
+            showShockWhenConnected -> "查看Hex"
+            else -> "已连接"
+        }
+
+        binding.lowFreqExpandedOverlay.btnCenterInfo.setImageResource(
+            if (hasClient) R.drawable.color_smile_head else R.drawable.black_cry_head
+        )
+
+        binding.middleExpandedOverlay.btnCenterInfo.setImageResource(
+            if (hasClient) R.drawable.color_smile_head else R.drawable.black_cry_head
+        )
+
+        binding.bioExpandedOverlay.btnCenterInfo.setImageResource(
+            if (hasClient) R.drawable.color_smile_head else R.drawable.black_cry_head
+        )
+    }
+
+
+    //encode 弹窗
+    private fun bindConnStatusDoubleTap(iv: ImageView) {
+        iv.isClickable = true
+        iv.isFocusable = true
+
+        val detector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                //1.没连接
+                val count = wifiTcpServerManager.connectedPeers().size
+                if (count <= 0) return true
+
+                //2.已连接
+                showShockWhenConnected = true
+                updateConnStatusImage(count)
+
+                val dialog = EncodeDialog.newInstance(latestCommitHex, latestCommitMeta)
+                dialog.onDismissCallback = {
+                    // 关闭弹窗：退出 shock，恢复 laugh（仍由 updateConnStatusImage 决定）
+                    showShockWhenConnected = false
+                    updateConnStatusImage(count)
+                }
+                dialog.show(supportFragmentManager, "encode_dialog")
+                return true
+
+            }
+        })
+
+        iv.setOnTouchListener { _, ev ->
+            val handled = detector.onTouchEvent(ev)
+            // 关键：这里要返回 true（至少不能返回 false）
+            true
+        }
+    }
+
+    private fun showSendToast(ctx: Context, msg: String, success: Boolean) {
+        val v = layoutInflater.inflate(R.layout.toast_send, null)
+        v.findViewById<TextView>(R.id.tvToast).text = msg
+        v.findViewById<ImageView>(R.id.ivToast).setImageResource(
+            if (success) R.drawable.laugh_ else R.drawable.cry_ // 失败你也可以换 shock_
+        )
+
+        Toast(ctx).apply {
+            duration = Toast.LENGTH_SHORT
+            view = v
+            setGravity(Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL, 0, 120)
+        }.show()
     }
 }

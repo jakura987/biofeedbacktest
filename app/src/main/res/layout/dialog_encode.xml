@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#44000000"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- 中间的大白面板 -->
+    <LinearLayout
+        android:id="@+id/panel"
+        android:layout_width="450dp"
+        android:layout_height="450dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_encode_panel_round"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView
+            android:id="@+id/tvMeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="mode=... peer=... len=..."
+            android:textSize="12sp"
+            android:textColor="#666666"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="#22000000" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvHex"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="(hex...)"
+                    android:textSize="12sp"
+                    android:textColor="#111111"
+                    android:lineSpacingExtra="2dp"
+                    android:textIsSelectable="true" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="#22000000" />
+
+                <TextView
+                    android:id="@+id/tvDecoded"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="(decoded...)"
+                    android:textSize="12sp"
+                    android:textColor="#111111"
+                    android:textIsSelectable="true" />
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+</FrameLayout>
