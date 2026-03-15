@@ -137,7 +137,7 @@ object WifiFrameDecoder {
             sb.appendLine("  channelBlock[$idx] channel=${info.channel}")
             sb.appendLine("  [0] flag0 (通道标识)                    : 0x${info.flag0.toHex2()} (raw=${blk.sliceHex(0,0)})")
             sb.appendLine("  [1] waveform (刺激/载波波形)             : ${Waveform.from(wf)} (raw=${blk.sliceHex(1,1)} )")
-            sb.appendLine("  [2,3] intensity (电流强度)              : ${info.intensity} (raw=${blk.sliceHex(2,3)})")
+            sb.appendLine("  [2,3] intensity (电流强度)              : ${info.intensity} (raw/2) (raw=${blk.sliceHex(2,3)})")
             sb.appendLine("  [4,5,6] width_us (脉冲宽度)             : ${info.widthUs} (raw=${blk.sliceHex(4,6)})")
             sb.appendLine("  [7] delay_s (延时时间)                  : ${info.delayS} (raw/10) (raw=${blk.sliceHex(7,7)})")
             sb.appendLine("  [8] freqType (0恒定,1变频)              : ${info.freqType} (raw=${blk.sliceHex(8,8)})")
@@ -242,7 +242,7 @@ object WifiFrameDecoder {
 
         val flag0 = b[0].u8()
         val waveform = b[1].u8()
-        val intensity = u16be(b[2], b[3])
+        val intensity = u16be(b[2], b[3]) / 2
         val width = (b[4].u8() shl 16) or (b[5].u8() shl 8) or b[6].u8()
 
         val delay01s = b[7].u8()

@@ -79,8 +79,9 @@ class LMFreqChannelCoderV1 : IChannelCoderV1 {
         // out[24，25，26] carrier  工作频率（tiLoadFreq）
         // out[27]  差频周期
         // out[28]  动态周期
-        out[29] = channelDetail.contractionTimeSec.and(0xFF).toByte() ?: 0x00
-        out[30] = channelDetail.stimulationTimeSec.and(0xFF).toByte() ?: 0x00
+        out[29] = channelDetail.stimulationTimeSec.and(0xFF).toByte() ?: 0x00 //放松刺激
+        out[30] = channelDetail.contractionTimeSec.and(0xFF).toByte() ?: 0x00 //收缩
+
         // out[31，32]  触发阈值
         // out[33] 预留
 
