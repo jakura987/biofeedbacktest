@@ -84,28 +84,34 @@ class ChannelVO(
             dto = dto.copy(totalTime = p * 1)
         }
 
+
+    var amplitudeProgress: Int //AmplitudeProgress
+        get() {
+            val amplitude = dto.amplitude ?: 0
+            return amplitude.coerceIn(0, 100)
+        }
+        set(value) {
+            val p = value.coerceIn(0, 100)
+            dto = dto.copy(amplitude = p * 1)
+        }
+
     //脉冲频率
     var frequencyMinProgress: Int
         get() {
-            val f = (dto.frequencyMin ?: 0.1).coerceIn(0.1, 1000.0)
+            val f = (dto.frequencyMin ?: 0.0).coerceIn(0.0, 1000.0)
             return if (f < 1.0) {
-                // 0.1..0.9 -> progress 0..8
-                val idx = kotlin.math.round((f - 0.1) / 0.1).toInt()
-                idx.coerceIn(0, 8)
+                kotlin.math.round(f / 0.1).toInt().coerceIn(0, 9)
             } else {
-                // 1..1000 -> progress 9..1008
                 val iv = kotlin.math.round(f).toInt().coerceIn(1, 1000)
-                8 + iv // 1->9, 1000->1008
+                9 + iv
             }
         }
         set(value) {
-            val p = value.coerceIn(0, 1008)
-            val f = if (p <= 8) {
-                // 0..8 -> 0.1..0.9
-                0.1 + p * 0.1
+            val p = value.coerceIn(0, 1009)
+            val f = if (p <= 9) {
+                p * 0.1
             } else {
-                // 9..1008 -> 1..1000
-                (p - 8).toDouble()
+                (p - 9).toDouble()
             }
             dto = dto.copy(frequencyMin = f, frequencyMax = f)
         }

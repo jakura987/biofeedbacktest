@@ -241,6 +241,7 @@ object WifiFrameDecoder {
         val waveform = b[1].u8()
         val intenI = b[2].u8()
         val intenF = b[3].u8()
+        val intensity = u16be(b[2], b[3])
         val width = (b[4].u8() shl 16) or (b[5].u8() shl 8) or b[6].u8()
 
         val delay01s = b[7].u8()
@@ -289,7 +290,7 @@ object WifiFrameDecoder {
             channel = channel,
             flag0 = flag0,
             waveform = waveform,
-            intensity = "${intenI}.${intenF.toString().padStart(2, '0')}",
+            intensity = intensity.toString(),
             widthUs = width,
             delayS = delayS,
             freqType = freqType,

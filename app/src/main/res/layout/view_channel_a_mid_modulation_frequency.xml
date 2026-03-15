@@ -21,6 +21,89 @@
             android:padding="8dp">
 
 
+            <!-- 1) 幅值 步长1 -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/tv_title_amplitude"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:minWidth="90dp"
+                    android:text="幅值"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/iv_minus_amplitude"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="12dp"
+                    android:layout_toEndOf="@id/tv_title_amplitude"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_minus" />
+
+                <ImageView
+                    android:id="@+id/iv_add_amplitude"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/therapy_ic_add" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_seekbar_amplitude"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toStartOf="@id/iv_add_amplitude"
+                    android:layout_toEndOf="@id/iv_minus_amplitude"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
+                        android:id="@+id/seek_amplitude"
+                        android:layout_width="match_parent"
+                        android:layout_height="24dp"
+                        android:max="100"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp"
+                        android:progress="@={channelVo.amplitudeProgress}"
+                        android:progressDrawable="@drawable/round_seekbar"
+                        android:thumb="@drawable/seekbar_thumb_number" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_seek_amplitude_min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_amplitude"
+                    android:layout_alignStart="@id/card_seekbar_amplitude"
+                    android:layout_marginTop="6dp"
+                    android:text="0.0"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_amplitude_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/card_seekbar_amplitude"
+                    android:layout_alignEnd="@id/card_seekbar_amplitude"
+                    android:layout_marginTop="6dp"
+                    android:text="100ma"
+                    android:textColor="#9A9A9A"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+
             <!-- 调幅度 步长25 -->
             <RelativeLayout
                 android:layout_width="match_parent"

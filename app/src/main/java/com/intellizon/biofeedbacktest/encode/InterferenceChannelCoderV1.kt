@@ -53,7 +53,9 @@ class InterferenceChannelCoderV1 : IChannelCoderV1 {
         out[0] = (0x10 or (0x01 shl (channelDetail.channelName - 1))).and(0xFF).toByte()
         out[1] = channelDetail.waveform.and(0xFF).toByte()
         out[2] = 0x00
-        out[3] = 0x00
+        //临时乘以2
+        //out[3] = channelDetail.amplitude?.and(0xFF)?.toByte() ?: 0x00
+        out[3] = (((channelDetail.amplitude ?: 0) * 2).and(0xFF)).toByte()
 
         out[4] = widthHi
         out[5] = widthMid

@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.view.GestureDetector
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.RadioButton
@@ -18,6 +20,7 @@ import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.IdRes
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.intellizon.biofeedbacktest.databinding.ActivityMainBinding
@@ -35,6 +38,7 @@ import com.intellizon.biofeedbacktest.domain.TherapyParamMode
 import com.intellizon.biofeedbacktest.domain.Waveform
 import com.intellizon.biofeedbacktest.encode.TherapyCoderV1
 import com.intellizon.biofeedbacktest.module.EncodeDialog
+import com.intellizon.biofeedbacktest.progress.RyCompactSeekbar
 import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initFrequencyMinUi
 import com.intellizon.biofeedbacktest.ui.SeekbarUiBinder.initStepSeekbarUi
 import com.intellizon.biofeedbacktest.util.TherapyChannelApplier
@@ -472,7 +476,10 @@ class MainActivity : AppCompatActivity() {
             initStepSeekbarUi(root, R.id.seek_total, R.id.iv_minus_total, R.id.iv_add_total, 99, 1.0, decimals = 0)
 
             initStepSeekbarUi(root, R.id.seek_width, R.id.iv_minus_width, R.id.iv_add_width, 100000, 10.0, decimals = 0)
+            bindWidthInputDialog(root, R.id.tv_title_width, R.id.seek_width)
             initStepSeekbarUi(root, R.id.seek_intensity, R.id.iv_minus_intensity, R.id.iv_add_intensity, 4, 25.0, decimals = 0)
+
+            initStepSeekbarUi(root, R.id.seek_amplitude, R.id.iv_minus_amplitude, R.id.iv_add_amplitude, 100, 1.0, decimals = 0)
 
             initStepSeekbarUi(root, R.id.seek_tiload, R.id.iv_minus_tiload, R.id.iv_add_tiload, 20, 0.5, decimals = 1)
 
@@ -501,6 +508,8 @@ class MainActivity : AppCompatActivity() {
 
 
         }
+
+
 
         /**
          * ✅ 通用初始化：
@@ -610,6 +619,64 @@ class MainActivity : AppCompatActivity() {
         } else {
             SubModeInOther.CCFES  // 0x04
         }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun bindWidthInputDialog(
+        root: View,
+        titleId: Int,
+        seekId: Int,
+    ) {
+        val title = root.findViewById<TextView?>(titleId) ?: return
+        val seek = root.findViewById<RyCompactSeekbar?>(seekId) ?: return
+
+        val detector = GestureDetector(title.context,
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onDoubleTap(e: MotionEvent): Boolean {
+                    showWidthInputDialog(title.context, seek)
+                    return true
+                }
+            })
+
+        title.isClickable = true
+        title.isFocusable = true
+        title.setOnTouchListener { _, event ->
+            detector.onTouchEvent(event)
+            true
+        }
+    }
+
+
+    private fun showWidthInputDialog(
+        context: Context,
+        seek: RyCompactSeekbar,
+    ) {
+        val currentWidth = seek.progress * 10
+
+        val input = EditText(context).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = "请输入脉冲宽度（步长10）"
+            setText(currentWidth.toString())
+            setSelection(text.length)
+        }
+
+        AlertDialog.Builder(context)
+            .setTitle("输入脉冲宽度")
+            .setView(input)
+            .setNegativeButton("取消", null)
+            .setPositiveButton("确定") { _, _ ->
+                val raw = input.text?.toString()?.trim()?.toIntOrNull() ?: return@setPositiveButton
+
+                val clamped = raw.coerceIn(0, 1_000_000)
+
+                // 四舍五入到最接近的10
+                val aligned = ((clamped + 5) / 10) * 10
+
+                val targetProgress = (aligned / 10).coerceIn(0, seek.max)
+                seek.progress = targetProgress
+                seek.notifyRefresh()
+            }
+            .show()
     }
 
     private fun prepareVos(@TherapyMode mode: Int) {

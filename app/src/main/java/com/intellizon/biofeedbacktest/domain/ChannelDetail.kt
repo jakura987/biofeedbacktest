@@ -15,8 +15,13 @@ data class ChannelDetail(
     val waveform: Int,
     @Waveform
     val modulationWaveform: Int,       // 调制波形
-    @field:IntRange(from = 0, to = 100)
+
+    @field:IntRange(from = 0, to = 100)//调幅深度
     val presetIntensity: Int? = null,  // 0-100 mA
+
+    @field:IntRange(from = 0, to = 100) //幅值
+    val amplitude: Int? = null,  // 0-100 mA
+
     val width: Int? = null,            // 脉宽（单位你后面定：us/ms）
     @field:FrequencyType
     val frequencyType: Int,

@@ -50,11 +50,11 @@ object SeekbarUiBinder {
 
     /**
      * 频率（脉冲频率）分段步进 UI：
-     * 0.1..0.9 step 0.1  +  1..1000 step 1
+     * 0.0..0.9 step 0.1  +  1..1000 step 1
      *
      * progress:
-     * 0..8   => 0.1..0.9
-     * 9..1008=> 1..1000
+     * 0..9      => 0.0..0.9
+     * 10..1009  => 1..1000
      */
     fun initFrequencyMinUi(
         root: View,
@@ -63,23 +63,30 @@ object SeekbarUiBinder {
         plusId: Int,
     ) {
         val seek = root.findViewById<View?>(seekId) as? RyCompactSeekbar ?: return
-        // ✅ 缺按钮不致命：允许没有 +/- 也能拖动
         val minus = root.findViewById<View?>(minusId)
         val plus = root.findViewById<View?>(plusId)
 
-        seek.max = 1008
+        seek.max = 1009
 
         seek.setFormatter { p ->
-            val f = if (p <= 8) 0.1 + p * 0.1 else (p - 8).toDouble()
-            if (f < 1.0) String.format(Locale.US, "%.1f", f) else String.format(Locale.US, "%.0f", f)
+            val f = if (p <= 9) {
+                p * 0.1
+            } else {
+                (p - 9).toDouble()
+            }
+            if (f < 1.0) {
+                String.format(Locale.US, "%.1f", f)
+            } else {
+                String.format(Locale.US, "%.0f", f)
+            }
         }
         seek.notifyRefresh()
 
-        minus.setOnClickListener {
+        minus?.setOnClickListener {
             seek.progress = (seek.progress - 1).coerceAtLeast(0)
             seek.notifyRefresh()
         }
-        plus.setOnClickListener {
+        plus?.setOnClickListener {
             seek.progress = (seek.progress + 1).coerceAtMost(seek.max)
             seek.notifyRefresh()
         }
