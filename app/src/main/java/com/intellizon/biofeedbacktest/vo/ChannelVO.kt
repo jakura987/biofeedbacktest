@@ -143,12 +143,12 @@ class ChannelVO(
 
     var modulationFreqProgress: Int
         get() {
-            val tiload = dto.modulationFreq ?: 1
-            return tiload.coerceIn(0, 150)
+            val v = dto.frequencyMin ?: 1.0
+            return v.coerceIn(0.0, 150.0).toInt()
         }
         set(value) {
             val p = value.coerceIn(0, 150)
-            dto = dto.copy(modulationFreq = p)
+            dto = dto.copy(frequencyMin = p.toDouble())
         }
 
 

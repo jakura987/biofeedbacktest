@@ -110,6 +110,9 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        //保证单选
+        bindMidModulationWaveformSingleChoice()
+
         // 启动 TCP server
         disposables.add(
             wifiTcpServerManager.startIfNeeded(tcpPort)
@@ -595,16 +598,75 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //读取中频调制波形
+    // 读取中频调制波形
     @Waveform
     private fun readMiddleModulationWaveformFromCard(): Int {
         val cardMid = findViewById<View>(R.id.midFrequency)
-        val rg = cardMid.findViewById<RadioGroup?>(R.id.rg_mid_modulationWaveform)
-        return when (rg?.checkedRadioButtonId ?: View.NO_ID) {
-            R.id.rb_mid_mod_sine -> Waveform.SINE
-            R.id.rb_mid_mod_biphasic_square -> Waveform.BIPHASIC_SQUARE
-            R.id.rb_mid_mod_triangle -> Waveform.TRIANGLE
-            else -> Waveform.TRIANGLE // 干扰电默认
+
+        return when {
+            cardMid.findViewById<RadioButton>(R.id.rb_mid_mod_sine)?.isChecked == true ->
+                Waveform.SINE
+
+            cardMid.findViewById<RadioButton>(R.id.rb_mid_mod_biphasic_square)?.isChecked == true ->
+                Waveform.BIPHASIC_SQUARE
+
+            cardMid.findViewById<RadioButton>(R.id.rb_mid_mod_triangle)?.isChecked == true ->
+                Waveform.TRIANGLE
+
+            cardMid.findViewById<RadioButton>(R.id.rb_mid_mod_uniphasic_square)?.isChecked == true ->
+                Waveform.UNIPHASIC_SQUARE
+
+            cardMid.findViewById<RadioButton>(R.id.rb_mid_mod_trapezoid)?.isChecked == true ->
+                Waveform.TRAPEZOID
+
+            cardMid.findViewById<RadioButton>(R.id.rb_mid_mod_sawtooth)?.isChecked == true ->
+                Waveform.SAWTOOTH
+
+            cardMid.findViewById<RadioButton>(R.id.rb_mid_mod_exponential)?.isChecked == true ->
+                Waveform.EXPONENTIAL
+
+            cardMid.findViewById<RadioButton>(R.id.rb_mid_mod_spike)?.isChecked == true ->
+                Waveform.SHARP
+
+            cardMid.findViewById<RadioButton>(R.id.rb_mid_mod_equal_amplitude)?.isChecked == true ->
+                Waveform.EQUAL_AMPLITUDE
+
+            else -> Waveform.SINE
+        }
+    }
+
+    //拆成了两行 RadioGroup 保证单选
+    private fun bindMidModulationWaveformSingleChoice() {
+        val cardMid = findViewById<View?>(R.id.midFrequency) ?: return
+
+        val row1 = cardMid.findViewById<RadioGroup>(R.id.rg_mid_modulationWaveform_row1) ?: return
+        val row2 = cardMid.findViewById<RadioGroup>(R.id.rg_mid_modulationWaveform_row2) ?: return
+        val row3 = cardMid.findViewById<RadioGroup>(R.id.rg_mid_modulationWaveform_row3) ?: return
+
+        var suppress = false
+
+        row1.setOnCheckedChangeListener { _, checkedId ->
+            if (suppress || checkedId == View.NO_ID) return@setOnCheckedChangeListener
+            suppress = true
+            row2.clearCheck()
+            row3.clearCheck()
+            suppress = false
+        }
+
+        row2.setOnCheckedChangeListener { _, checkedId ->
+            if (suppress || checkedId == View.NO_ID) return@setOnCheckedChangeListener
+            suppress = true
+            row1.clearCheck()
+            row3.clearCheck()
+            suppress = false
+        }
+
+        row3.setOnCheckedChangeListener { _, checkedId ->
+            if (suppress || checkedId == View.NO_ID) return@setOnCheckedChangeListener
+            suppress = true
+            row1.clearCheck()
+            row2.clearCheck()
+            suppress = false
         }
     }
 

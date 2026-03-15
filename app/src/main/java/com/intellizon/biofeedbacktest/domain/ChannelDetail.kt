@@ -85,12 +85,12 @@ annotation class ChannelName {
     Waveform.UNIPHASIC_SQUARE,
     Waveform.TRIANGLE,
     Waveform.SINE,
-    Waveform.TENS,
     //Waveform.TRIANGULAR,
     Waveform.EXPONENTIAL,
     Waveform.SAWTOOTH,
     Waveform.SHARP,
-    Waveform.TRAPEZOID
+    Waveform.TRAPEZOID,
+    Waveform.EQUAL_AMPLITUDE
     )
 annotation class Waveform {
     companion object {
@@ -123,24 +123,24 @@ annotation class Waveform {
          */
         const val EXPONENTIAL: Int = 0x06
         /**
-         * TENS
-         * */
-        const val TENS: Int = 0x07
-        /**
          * 尖波
+         * */
+        const val SHARP: Int = 0x07
+        /**
+         * 等幅波
          */
-        const val SHARP: Int = 0x08
+        const val EQUAL_AMPLITUDE: Int = 0x08
         fun from(value: Int): String =
             when (value) {
                 BIPHASIC_SQUARE -> "双相方波"
-                UNIPHASIC_SQUARE -> "EMPTY" //todo 单相方波
+                UNIPHASIC_SQUARE -> "单相方波"
                 TRIANGLE -> "三角波"
                 SINE -> "正弦波"
-                TENS -> "不对称双相波"
                 TRAPEZOID -> "梯形波"
                 EXPONENTIAL -> "指数波"
                 SAWTOOTH -> "锯齿波"
                 SHARP -> "尖波"
+                EQUAL_AMPLITUDE -> "等幅波"
                 else -> "未知波形"
             }
     }

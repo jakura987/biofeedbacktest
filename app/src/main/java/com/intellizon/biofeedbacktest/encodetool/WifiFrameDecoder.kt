@@ -141,8 +141,8 @@ object WifiFrameDecoder {
             sb.appendLine("  [4,5,6] width_us (脉冲宽度)             : ${info.widthUs} (raw=${blk.sliceHex(4,6)})")
             sb.appendLine("  [7] delay_s (延时时间)                  : ${info.delayS} (raw/10) (raw=${blk.sliceHex(7,7)})")
             sb.appendLine("  [8] freqType (0恒定,1变频)              : ${info.freqType} (raw=${blk.sliceHex(8,8)})")
-            sb.appendLine("  [9,10] fMin_hz (频率最小)               : ${info.fMinHz} (raw/10) (raw=${blk.sliceHex(9,10)})")
-            sb.appendLine("  [11,12] fMax_hz (频率最大)              : ${info.fMaxHz} (raw/10) (raw=${blk.sliceHex(11,12)})")
+            sb.appendLine("  [9,10] fMin_hz (调制/脉冲频率)               : ${info.fMinHz} (raw/10) (raw=${blk.sliceHex(9,10)})")
+            sb.appendLine("  [11,12] fMax_hz (差频频率)              : ${info.fMaxHz} (raw=${blk.sliceHex(11,12)})")
 
             sb.appendLine("  [13,14] rise_ms (上升时间)              : ${info.riseMsOrTick} (raw/2) (raw=${blk.sliceHex(13,14)})")
             sb.appendLine("  [15,16] fall_ms (下降时间)              : ${info.fallMsOrTick} (raw/2) (raw=${blk.sliceHex(15,16)})")
@@ -152,14 +152,16 @@ object WifiFrameDecoder {
 
             sb.appendLine("  [22] modulationWaveform (调制波形)      : ${Waveform.from(modulationWf)} (raw=${blk.sliceHex(22,22)})")
             sb.appendLine("  [23] depth_percent (调幅深度%)          : ${info.depthPercent} (raw=${blk.sliceHex(23,23)})")
-            sb.appendLine("  [24] modFreq_hz (调制频率Hz)            : ${info.modFreqHz} (raw=${blk.sliceHex(24,24)})")
-            sb.appendLine("  [25] carrier_khz (工作频率kHz)              : ${info.carrierKhz} (raw/2) (raw=${blk.sliceHex(25,25)})")
-            sb.appendLine("  [26,27] diffA_hz (差频A)                : ${info.diffAHz} (raw=${blk.sliceHex(26,27)})")
-            sb.appendLine("  [28,29] diffB_hz (差频B)                : ${info.diffBHz} (raw=${blk.sliceHex(28,29)})")
-            sb.appendLine("  [30] diffPeriod_s (差频周期s)           : ${info.diffPeriodS} (raw=${blk.sliceHex(30,30)})")
-            sb.appendLine("  [31] dynamicPeriod_s (动态周期s)        : ${info.dynamicPeriodS} (raw=${blk.sliceHex(31,31)})")
-            sb.appendLine("  [32] contraction_s (收缩时间s)          : ${info.contractionS} (raw=${blk.sliceHex(32,32)})")
-            sb.appendLine("  [33] stimulation_s (刺激时间s)          : ${info.stimulationS} (raw=${blk.sliceHex(33,33)})")
+
+            sb.appendLine("  [24,25,26] carrier_khz (工作频率kHz)              : ${info.carrierKhz} (raw/10) (raw=${blk.sliceHex(24,26)})")
+
+            sb.appendLine("  [27] diffPeriod_s (差频周期s)           : ${info.diffPeriodS} (raw=${blk.sliceHex(27,27)})")
+            sb.appendLine("  [28] dynamicPeriod_s (动态周期s)        : ${info.dynamicPeriodS} (raw=${blk.sliceHex(28,28)})")
+            sb.appendLine("  [29] stimulation_s (放松时间s)          : ${info.stimulationS} (raw=${blk.sliceHex(29,29)})")
+            sb.appendLine("  [30] contraction_s (收缩时间s)          : ${info.contractionS} (raw=${blk.sliceHex(30,30)})")
+            sb.appendLine("  [31,32] 阈值                           : ${info.threshold} (raw=${blk.sliceHex(31,32)})")
+
+            sb.appendLine("  [33] 预留       : ${info.reservation} (raw=${blk.sliceHex(30,30)})")
 
             sb.appendLine("  rawHex(block34)                         : ${blk.toHex()}")
 
@@ -222,25 +224,24 @@ object WifiFrameDecoder {
         val totalMin: Int,
         val modulationWaveform: Int,
         val depthPercent: Int,
-        val modFreqHz: Int,
         val carrierKhz: Double,
-        val diffAHz: Int,
-        val diffBHz: Int,
         val diffPeriodS: Int,
         val dynamicPeriodS: Int,
         val contractionS: Int,
         val stimulationS: Int,
+        val threshold: Int,
+        val reservation: Int
     )
 
-    /** 固定 34B 通道块解码（与你 Python 一致） */
+    /** 固定 34B 通道块解码（与你 Python 一致）
+     * 除以某个数字是模拟下位机处理
+     * */
     private fun decodeChannelBlock34(block: ByteArray): ChannelInfo {
         require(block.size == 34) { "channel block must be 34B, got ${block.size}" }
         val b = block
 
         val flag0 = b[0].u8()
         val waveform = b[1].u8()
-        val intenI = b[2].u8()
-        val intenF = b[3].u8()
         val intensity = u16be(b[2], b[3])
         val width = (b[4].u8() shl 16) or (b[5].u8() shl 8) or b[6].u8()
 
@@ -250,8 +251,8 @@ object WifiFrameDecoder {
         val freqType = b[8].u8()
         val fMinRaw = u16be(b[9], b[10])
         val fMaxRaw = u16be(b[11], b[12])
-        val fMinHz = fMinRaw / 10.0
-        val fMaxHz = fMaxRaw / 10.0
+        val fMinHz = fMinRaw / 10.0 //低频生物反馈: 脉冲频率 中频：调制频率
+        val fMaxHz = fMaxRaw //差频频率 仅中频干扰有 其余模式需要设置成0
 
         val rise = u16be(b[13], b[14]) / 2.0
         val fall = u16be(b[15], b[16]) / 2.0
@@ -265,17 +266,18 @@ object WifiFrameDecoder {
 
         val modWave = b[22].u8()
         val depth = b[23].u8()
-        val modFreq = b[24].u8()
-        val carrierRaw = b[25].u8()
-        val carrierKhz = carrierRaw / 2.0
 
-        val diffA = u16be(b[26], b[27])
-        val diffB = u16be(b[28], b[29])
-        val diffPeriod = b[30].u8()
-        val dynPeriod = b[31].u8()
+        val carrierRaw = (b[24].u8() shl 16) or (b[25].u8() shl 8) or b[26].u8()
+        val carrierKhz = carrierRaw / 10.0
+        val diffPeriod = b[27].u8()
+        val dynPeriod = b[28].u8()
 
-        val contraction = b[32].u8()
-        val stimulation = b[33].u8()
+        val stimulation = b[29].u8()
+        val contraction = b[30].u8()
+
+        val threshold = u16be(b[31], b[32])
+
+        val reservation33 = b[33].u8()
 
         val chBits = flag0 and 0x0F
         val channel = when (chBits) {
@@ -295,7 +297,7 @@ object WifiFrameDecoder {
             delayS = delayS,
             freqType = freqType,
             fMinHz = fMinHz,
-            fMaxHz = fMaxHz,
+            fMaxHz = fMaxHz.toDouble(),
             riseMsOrTick = rise,
             fallMsOrTick = fall,
             workS = workS,
@@ -303,14 +305,14 @@ object WifiFrameDecoder {
             totalMin = totalMin,
             modulationWaveform = modWave,
             depthPercent = depth,
-            modFreqHz = modFreq,
             carrierKhz = carrierKhz,
-            diffAHz = diffA,
-            diffBHz = diffB,
+
             diffPeriodS = diffPeriod,
             dynamicPeriodS = dynPeriod,
             contractionS = contraction,
             stimulationS = stimulation,
+            threshold = threshold,
+            reservation = reservation33
         )
     }
 

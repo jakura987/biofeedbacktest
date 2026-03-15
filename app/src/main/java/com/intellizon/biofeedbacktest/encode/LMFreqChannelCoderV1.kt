@@ -23,23 +23,23 @@ class LMFreqChannelCoderV1 : IChannelCoderV1 {
             .roundToInt()
             .coerceIn(0, 10_000)
 
-        val fMaxRaw: Int = ((channelDetail.frequencyMax ?: 0.0) * 10.0)
-            .roundToInt()
-            .coerceIn(0, 10_000)
+        //freMax保存的和freMin一样， 但是实际在低频/生物反馈发送的值为 0
+//        val fMaxRaw: Int = ((channelDetail.frequencyMax ?: 0.0) * 10.0)
+//            .roundToInt()
+//            .coerceIn(0, 10_000)
+
+
 
         val out = ByteArray(34) { 0x00 } // ✅ 固定 34B，尾部自动补 0
 
-        val riseTick = encodeRiseFallHalfTick(channelDetail.riseTime)
+        val riseTick = encodeRiseFallHalfTick(channelDetail.riseTime)//ms 处理后变成s
         val fallTick = encodeRiseFallHalfTick(channelDetail.fallTime)
 
         // --- 0..21：原低频字段 ---
         out[0]  = (0x10 or (0x01 shl (channelDetail.channelName - 1))).and(0xFF).toByte()
         out[1]  = channelDetail.waveform.and(0xFF).toByte()
-
-        //幅值 (临时乘以2)
-        out[2]  =  0x00
+        out[2]  = 0x00
         out[3] = (((channelDetail.amplitude ?: 0) * 2).and(0xFF)).toByte()
-        //out[3]  = channelDetail.amplitude?.and(0xFF)?.toByte() ?: 0x00
 
         out[4]  = widthHi
         out[5]  = widthMid
@@ -50,8 +50,8 @@ class LMFreqChannelCoderV1 : IChannelCoderV1 {
 
         out[9]  = ((fMinRaw ushr 8) and 0xFF).toByte()
         out[10] = ( fMinRaw         and 0xFF).toByte()
-        out[11] = ((fMaxRaw ushr 8) and 0xFF).toByte()
-        out[12] = ( fMaxRaw         and 0xFF).toByte()
+        out[11] = 0x00
+        out[12] = 0x00
 
         //out[13] = channelDetail.riseTime?.ushr(8)?.and(0xFF)?.toByte() ?: 0x00
         //out[14] = channelDetail.riseTime?.and(0xFF)?.toByte() ?: 0x00
@@ -73,17 +73,18 @@ class LMFreqChannelCoderV1 : IChannelCoderV1 {
         out[21] = channelDetail.totalTime?.and(0xFF)?.toByte() ?: 0x00
 
         // --- 22..31：中频扩展字段，低频不使用 -> 保持 0 ---
-        // out[22] modulationWaveform
-        // out[23] depth
-        // out[24] modulationFreq
-        // out[25] carrier
-        // out[26..27] diffA
-        // out[28..29] diffB
-        // out[30] diffPeriod
-        // out[31] dynamicPeriod
+        // out[22] modulationWaveform 调制波形
+        // out[23] depth     调幅深度
 
-        out[32] = channelDetail.contractionTimeSec.and(0xFF).toByte() ?: 0x00
-        out[33] = channelDetail.stimulationTimeSec.and(0xFF).toByte() ?: 0x00
+        // out[24，25，26] carrier  工作频率（tiLoadFreq）
+        // out[27]  差频周期
+        // out[28]  动态周期
+        out[29] = channelDetail.contractionTimeSec.and(0xFF).toByte() ?: 0x00
+        out[30] = channelDetail.stimulationTimeSec.and(0xFF).toByte() ?: 0x00
+        // out[31，32]  触发阈值
+        // out[33] 预留
+
+
 
         return out
     }
