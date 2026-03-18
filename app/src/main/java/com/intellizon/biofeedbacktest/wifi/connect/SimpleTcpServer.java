@@ -56,6 +56,7 @@ public final class SimpleTcpServer {
                     Log.i(TAG, "accepted " + s.getInetAddress().getHostAddress() + ":" + s.getPort());
                     // 新连接加入集合
                     clients.add(s);
+                    removeOldClientsWithSameIp(s);
                     Log.i(TAG, "client count=" + clients.size());
                     pool.execute(() -> handle(s));
                 }
@@ -67,6 +68,39 @@ public final class SimpleTcpServer {
             }
         });
         return true;
+    }
+
+
+    /**
+     * 按照IP清理旧连接
+     * @param newSock
+     */
+    private void removeOldClientsWithSameIp(Socket newSock) {
+        if (newSock == null || newSock.getInetAddress() == null) return;
+
+        String newIp = newSock.getInetAddress().getHostAddress();
+
+        for (Socket old : clients) {
+            if (old == null || old == newSock) continue;
+
+            try {
+                if (old.getInetAddress() == null) continue;
+
+                String oldIp = old.getInetAddress().getHostAddress();
+                if (!newIp.equals(oldIp)) continue;
+
+                Log.w(TAG, "same ip reconnect: remove old client "
+                        + oldIp + ":" + old.getPort()
+                        + " -> keep new " + newIp + ":" + newSock.getPort());
+
+                try { old.close(); } catch (Exception ignored) {}
+                clients.remove(old);
+            } catch (Exception e) {
+                Log.w(TAG, "removeOldClientsWithSameIp error: " + e.getMessage());
+                try { old.close(); } catch (Exception ignored) {}
+                clients.remove(old);
+            }
+        }
     }
 
     /**
