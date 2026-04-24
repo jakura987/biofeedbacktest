@@ -46,6 +46,7 @@ import com.intellizon.biofeedbacktest.vo.ChannelVO
 import com.intellizon.biofeedbacktest.vo.TherapyVO
 import com.intellizon.biofeedbacktest.wifi.TherapyFrameBuilderV1
 import com.intellizon.biofeedbacktest.wifi.connect.LocalIpHelper
+import com.intellizon.biofeedbacktest.wifi.connect.TcpServerController
 import com.intellizon.biofeedbacktest.wifi.manager.WifiTcpServerManager
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -55,7 +56,7 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(){
 
     private var activeOverlay: View? = null
 
@@ -63,6 +64,9 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var wifiTcpServerManager: WifiTcpServerManager
+
+//    @Inject
+//    lateinit var tcpController: TcpServerController
 
     private val tcpPort = 8883
 
@@ -114,13 +118,16 @@ class MainActivity : AppCompatActivity() {
         bindMidModulationWaveformSingleChoice()
 
         // 启动 TCP server
-        disposables.add(
-            wifiTcpServerManager.startIfNeeded(tcpPort)
-                .subscribe(
-                    { /* ignore */ },
-                    { Timber.e(it, "start tcp failed") }
-                )
-        )
+        wifiTcpServerManager.ensureStarted(tcpPort)
+//
+//        // 启动 TCP server
+//        disposables.add(
+//          tcpController.ensureStarted(8883)
+//                .subscribe(
+//                    { /* ignore */ },
+//                    { Timber.e(it, "start tcp failed") }
+//                )
+//        )
 
 
         disposables.add(
@@ -474,8 +481,8 @@ class MainActivity : AppCompatActivity() {
             initStepSeekbarUi(root, R.id.seek_delay, R.id.iv_minus_delay, R.id.iv_add_delay, 200, 0.1)
             initStepSeekbarUi(root, R.id.seek_rise, R.id.iv_minus_rise, R.id.iv_add_rise, 40, 0.5)
             initStepSeekbarUi(root, R.id.seek_fall, R.id.iv_minus_fall, R.id.iv_add_fall, 40, 0.5)
-            initStepSeekbarUi(root, R.id.seek_rest, R.id.iv_minus_rest, R.id.iv_add_rest, 40, 0.5)
-            initStepSeekbarUi(root, R.id.seek_sustain, R.id.iv_minus_sustain, R.id.iv_add_sustain, 40, 0.5)
+            initStepSeekbarUi(root, R.id.seek_rest, R.id.iv_minus_rest, R.id.iv_add_rest, 198, 0.5)
+            initStepSeekbarUi(root, R.id.seek_sustain, R.id.iv_minus_sustain, R.id.iv_add_sustain, 198, 0.5)
             initStepSeekbarUi(root, R.id.seek_total, R.id.iv_minus_total, R.id.iv_add_total, 99, 1.0, decimals = 0)
 
             initStepSeekbarUi(root, R.id.seek_width, R.id.iv_minus_width, R.id.iv_add_width, 100000, 10.0, decimals = 0)

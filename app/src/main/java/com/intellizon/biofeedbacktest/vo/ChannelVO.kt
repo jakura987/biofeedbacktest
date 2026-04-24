@@ -50,7 +50,7 @@ class ChannelVO(
             return kotlin.math.round(sec / 0.5).toInt().coerceIn(0, 40)
         }
         set(value) {
-            val p = value.coerceIn(0, 40)
+            val p = value.coerceIn(0, 198)
             dto = dto.copy(restTime = p * 0.5)
         }
 
@@ -60,7 +60,7 @@ class ChannelVO(
             return kotlin.math.round(sec / 0.5).toInt().coerceIn(0, 40)
         }
         set(value) {
-            val p = value.coerceIn(0, 40)
+            val p = value.coerceIn(0, 198)
             dto = dto.copy(sustainTime = p * 0.5)
         }
 
