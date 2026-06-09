@@ -25,6 +25,7 @@ class TherapyCoderV1 : AbsTherapyCoder() {
     private val lmFreqChannelCoderV1: IChannelCoderV1 = LMFreqChannelCoderV1()
     private val interferenceChannelCoderV1: IChannelCoderV1 = InterferenceChannelCoderV1()
     private val modulatedChannelCoderV1: IChannelCoderV1 = ModulatedChannelCoderV1()
+    private val equalChannelCoderV1: IChannelCoderV1 = EQChannelCoderV1()
 
 
     override fun encodeName(therapyDetail: TherapyDetail): ByteArray {
@@ -91,6 +92,7 @@ class TherapyCoderV1 : AbsTherapyCoder() {
 
             TherapyParamMode.MIDDLE_INTERFERENCE -> interferenceChannelCoderV1
             TherapyParamMode.MIDDLE_MODULATED -> modulatedChannelCoderV1
+            TherapyParamMode.MIDDLE_EQUAL -> equalChannelCoderV1
 
             TherapyParamMode.LOW_FREQ,
             TherapyParamMode.BIOFEEDBACK_ETS,
@@ -112,7 +114,6 @@ class TherapyCoderV1 : AbsTherapyCoder() {
 
         return ret
     }
-
 
 
     fun encode(

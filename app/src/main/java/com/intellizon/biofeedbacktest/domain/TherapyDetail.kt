@@ -42,6 +42,7 @@ data class TherapyDetail constructor(
     TherapyMode.LOW_FREQUENCY,
     TherapyMode.BIOFEEDBACK,
     TherapyMode.EVALUATION,
+    TherapyMode.GAMING,
 )
 annotation class TherapyMode {
     companion object {
@@ -58,6 +59,7 @@ annotation class TherapyMode {
         const val LOW_FREQUENCY: Int = 0b0100 //4
         const val BIOFEEDBACK: Int = 0b0101   // NEW (生物反馈)
         const val EVALUATION: Int = 0b0110    // 评估
+        const val GAMING: Int = 0b0111    // 情景交互/游戏 7
 
         //非正常业务使用
         const val BASIC_TEST = 0xFF
@@ -73,8 +75,10 @@ annotation class TherapyMode {
 @IntDef(
     TherapyParamMode.MIDDLE_INTERFERENCE,
     TherapyParamMode.MIDDLE_MODULATED,
+    TherapyParamMode.MIDDLE_EQUAL,
     TherapyParamMode.LOW_FREQ,
     TherapyParamMode.EVA,
+    TherapyParamMode.GAME,
     TherapyParamMode.BASIC_TEST,
     TherapyParamMode.BIOFEEDBACK_ETS,     // NEW
     TherapyParamMode.BIOFEEDBACK_CCFES    // NEW
@@ -83,6 +87,7 @@ annotation class TherapyMode {
 annotation class TherapyParamMode {
     companion object {
         const val LOW_FREQ: Int = 0x04
+        const val GAME: Int = 0x53 //游戏
         const val EVA: Int = 0x06 //评估
         const val OTHER_TPAS: Int = 0x12
         const val BASIC_TEST: Int = 0xFF
@@ -90,6 +95,7 @@ annotation class TherapyParamMode {
         // —— Middle（细分到组合码）——
         const val MIDDLE_INTERFERENCE: Int = 0x41  // (MIDDLE, 0x11) //65
         const val MIDDLE_MODULATED: Int = 0x43   // (MIDDLE, 0x12)
+        const val MIDDLE_EQUAL: Int = 0x45       // (MIDDLE, 0x13)
 
         // —— Biofeedback ——（组合码）
         const val BIOFEEDBACK_ETS: Int = 0x51   // ETS
@@ -101,11 +107,13 @@ annotation class TherapyParamMode {
                 TherapyMode.MIDDLE -> when (subMode) {
                     SubModeInMiddle.INTERFERENCE -> MIDDLE_INTERFERENCE
                     SubModeInMiddle.MODULATED -> MIDDLE_MODULATED
+                    SubModeInMiddle.EQUAL -> MIDDLE_EQUAL
                     else -> throw IllegalArgumentException("MIDDLE: unknown subMode=$subMode")
                 }
 
                 TherapyMode.LOW_FREQUENCY -> LOW_FREQ
                 TherapyMode.EVALUATION -> EVA
+                TherapyMode.GAMING -> GAME
 
                 TherapyMode.BASIC_TEST -> BASIC_TEST
 
@@ -162,6 +170,8 @@ annotation class SubModeInMiddle {
         const val INTERFERENCE = 0x11
         /** 调制中频电刺激 */
         const val MODULATED = 0x12
+        /** 等幅中频 */
+        const val EQUAL = 0x13
 
     }
 }
@@ -170,6 +180,7 @@ annotation class SubModeInMiddle {
 @IntDef(
     SubModeInMiddle.INTERFERENCE,
     SubModeInMiddle.MODULATED,
+    SubModeInMiddle.EQUAL,
     SubModeInMiddle.UNSET,
     SubModeInOther.ETS,
     SubModeInOther.CCFES,

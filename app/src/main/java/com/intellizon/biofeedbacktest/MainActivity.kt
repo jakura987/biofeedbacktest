@@ -56,7 +56,7 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(){
+class MainActivity : AppCompatActivity() {
 
     private var activeOverlay: View? = null
 
@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity(){
     private val therapyVO = TherapyVO(
         therapyId = 0L,
         modifiedDto = TherapyDetail(
-            name = "swets",
+            name = randomSchemeName(),
             mode = TherapyMode.LOW_FREQUENCY,
             subMode = 0,
             tremorFrequency = 0,
@@ -378,6 +378,11 @@ class MainActivity : AppCompatActivity(){
                 return@setOnClickListener
             }
 
+            // ✅ 每次点击发送前，生成新的方案名：swe000 ~ swe999
+            therapyVO.modifiedDto = therapyVO.modifiedDto.copy(
+                name = randomSchemeName()
+            )
+
 
             // 1) 读勾选状态（注意：必须从 overlay 找，因为每个 overlay 里都有一套）
             val hasA = overlay.findViewById<CheckBox>(R.id.cbSelectA)?.isChecked == true
@@ -520,7 +525,6 @@ class MainActivity : AppCompatActivity(){
         }
 
 
-
         /**
          * ✅ 通用初始化：
          * - 中频：content 里能找到 inter/mod include -> 两套都 init
@@ -584,8 +588,11 @@ class MainActivity : AppCompatActivity(){
     private fun readMiddleSubModeFromCard(): Int {
         val cardMid = findViewById<View>(R.id.midFrequency)
         val rbInterference = cardMid.findViewById<RadioButton>(R.id.rb_stim_mid_interference)
+        val rbEqual = cardMid.findViewById<RadioButton>(R.id.rb_stim_mid_equal)
         return if (rbInterference.isChecked) {
             SubModeInMiddle.INTERFERENCE // 0x11
+        } else if (rbEqual.isChecked) {
+            SubModeInMiddle.EQUAL
         } else {
             SubModeInMiddle.MODULATED    // 0x12
         }
@@ -964,6 +971,11 @@ class MainActivity : AppCompatActivity(){
             // 关键：这里要返回 true（至少不能返回 false）
             true
         }
+    }
+
+    private fun randomSchemeName(): String {
+        val num = (0..99999).random()
+        return "swe%05d".format(num)
     }
 
     private fun showSendToast(ctx: Context, msg: String, success: Boolean) {

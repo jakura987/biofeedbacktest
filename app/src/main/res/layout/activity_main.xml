@@ -260,6 +260,12 @@
                             style="@style/text.tab.parameter"
                             android:layout_marginStart="10dp"
                             android:text="调制中频电" />
+
+                        <RadioButton
+                            android:id="@+id/rb_stim_mid_equal"
+                            style="@style/text.tab.parameter"
+                            android:layout_marginStart="10dp"
+                            android:text="等幅波" />
                     </RadioGroup>
 
 
